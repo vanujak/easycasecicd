@@ -44,7 +44,8 @@ export default function Dashboard() {
         // 1) profile
         try {
           const meRes = await fetch(`${API}/auth/me`, {
-            headers: { Authorization: `Bearer ${token}` },
+            method: "GET",
+            headers: { "Content-Type": "application/json",Authorization: `Bearer ${token}` },
           });
           const me = await meRes.json();
           if (meRes.ok && me?.name) setUserName(me.name);
