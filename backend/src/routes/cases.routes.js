@@ -89,11 +89,7 @@ router.get("/next-number", async (req, res) => {
   }
 });
 
-/**
- * POST /api/cases
- * Body: { title (req), clientId (req), type?, courtType?, courtPlace?, status? }
- * Assigns next `number` server‑side (per user).
- */
+
 router.post("/", async (req, res) => {
   try {
     const body = req.body || {};
@@ -154,10 +150,8 @@ router.post("/", async (req, res) => {
   }
 });
 
-/**
- * GET /api/cases/:id
- * (Keep this AFTER the specific routes like /next-number)
- */
+//GET /api/cases/:id
+
 router.get("/:id", async (req, res) => {
   try {
     const doc = await Case.findOne({ _id: req.params.id, userId: req.userId })

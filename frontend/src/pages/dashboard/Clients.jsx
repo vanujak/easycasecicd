@@ -22,7 +22,7 @@ export default function Clients() {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState(null); // null = creating, obj = editing
   const emptyForm = useMemo(() => ({
-    type: "person",
+    type: "individual",
     name: "",
     email: "",
     phone: "",
@@ -38,7 +38,6 @@ export default function Clients() {
     try {
       const search = new URLSearchParams();
       if (q.trim()) search.set("q", q.trim());
-      // backend currently filters name by q; we’ll client‑side filter by type/district for now
       const res = await fetch(`${API}/api/clients${search.toString() ? `?${search}` : ""}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -70,7 +69,7 @@ export default function Clients() {
   const openEdit = (client) => {
     setEditing(client);
     setForm({
-      type: client.type ?? "person",
+      type: client.type ?? "individual",
       name: client.name ?? "",
       email: client.email ?? "",
       phone: client.phone ?? "",
