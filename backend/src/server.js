@@ -11,7 +11,7 @@ import casesRouter from "./routes/cases.routes.js";
 import hearingsRouter from "./routes/hearings.routes.js";
 
 const app = express();
-app.use(cors({ origin: ["http://localhost:5173","https://nonequable-floy-noily.ngrok-free.dev","https://easy-case.vercel.app"], credentials: true, allowedHeaders: ["Content-Type", "Authorization"],
+app.use(cors({ origin: ["http://localhost:5173","https://easy-case.vercel.app"], credentials: true, allowedHeaders: ["Content-Type", "Authorization"],
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]}));
 app.use(express.json());
 
