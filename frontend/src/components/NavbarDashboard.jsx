@@ -74,12 +74,6 @@ export default function NavbarDashboard() {
             <NavLink to="/clients" onClick={() => setOpen(false)} className={cls}>
               Clients
             </NavLink>
-            <NavLink to="/calendar" onClick={() => setOpen(false)} className={cls}>
-              Calendar
-            </NavLink>
-            <NavLink to="/settings" onClick={() => setOpen(false)} className={cls}>
-              Settings
-            </NavLink>
             <button
               onClick={() => {
                 setOpen(false);
