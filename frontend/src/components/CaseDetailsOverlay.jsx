@@ -47,7 +47,6 @@ export default function CaseDetailOverlay({ caseId, onClose }) {
   }, [caseId]);
 
   const nextHearingLabel = useMemo(() => {
-    // take the hearing with the latest (max) date that has a nextDate
     const withNext = (hearings || []).filter(h => h.nextDate);
     if (!withNext.length) return null;
 
@@ -59,68 +58,72 @@ export default function CaseDetailOverlay({ caseId, onClose }) {
   
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/40">
-      <div className="mx-auto flex h-full w-full max-w-6xl flex-col overflow-hidden bg-white shadow-2xl">
-        {/* Header */}
-        <div className="sticky top-0 z-10 border-b bg-white/90 px-4 py-3 backdrop-blur relative">
-          {/* Close */}
-          <button
-            onClick={onClose}
-            className="absolute right-2 top-2 rounded-md border px-3 py-2 hover:bg-gray-50"
-          >
-            ✕
-          </button>
-
-          {/* Add hearing */}
-          <div className="absolute left-2 top-2">
+    <div className="fixed inset-0 z-[1050] bg-black/40 backdrop-blur-sm">
+      <div className="mx-auto flex h-full w-full max-w-6xl flex-col overflow-hidden bg-white shadow-2xl md:rounded-xl md:my-4 md:h-[95vh]">
+        
+        {/* === OPTIMIZED HEADER === */}
+        <div className="sticky top-0 z-10 border-b bg-white px-4 py-3 shadow-sm">
+          
+          {/* Mobile Layout: Close Top-Right, Title Top-Left, Button Bottom */}
+          {/* Desktop Layout: Button Left, Title Center, Close Right */}
+          
+          <div className="relative flex flex-col md:flex-row md:items-center md:justify-center">
+            
+            {/* 1. Close Button (Absolute Top Right for Mobile & Desktop) */}
             <button
-              disabled={isClosed}
-              onClick={() => setOpenHearing(true)}
-              className={`rounded-lg px-4 py-2 font-semibold ${
-                isClosed
-                  ? "bg-gray-300 text-gray-600 cursor-not-allowed"
-                  : "bg-blue-600 text-white hover:bg-blue-700"
-              }`}
-              title={
-                isClosed
-                  ? "Case is closed. Hearings cannot be added."
-                  : "Add hearing"
-              }
+              onClick={onClose}
+              className="absolute right-0 top-0 -mr-2 -mt-2 p-2 text-gray-500 hover:text-gray-800 md:static md:right-auto md:top-auto md:mr-0 md:mt-0 md:rounded-md md:border md:px-3 md:py-2 md:hover:bg-gray-50 md:order-3 md:ml-auto"
             >
-              + Add hearing
+              ✕
             </button>
-          </div>
 
-          {/* Centered case info */}
-          <div className="flex flex-col items-center">
-            <h2 className="text-xl font-semibold">
-              {loading ? "Loading…" : caseDoc?.title}
-            </h2>
-            {!loading && caseDoc && (
-              <p className="text-sm text-gray-500">
-                {caseDoc.clientName ? `${caseDoc.clientName} • ` : ""}
-                {caseDoc.courtType}
-                {caseDoc.courtPlace ? ` — ${caseDoc.courtPlace}` : ""}
-                {caseDoc.number ? ` • #${caseDoc.number}` : ""}
-              </p>
-            )}
+            {/* 2. Case Info (Title) */}
+            <div className="mb-3 mr-8 flex flex-col md:mb-0 md:mr-0 md:items-center md:order-2 md:flex-1 md:px-4">
+                <h2 className="text-lg font-bold leading-tight md:text-xl">
+                  {loading ? "Loading…" : caseDoc?.title}
+                </h2>
+                {!loading && caseDoc && (
+                  <p className="text-xs text-gray-500 md:text-sm">
+                    {caseDoc.clientName ? `${caseDoc.clientName} • ` : ""}
+                    {caseDoc.courtType}
+                    {caseDoc.courtPlace ? ` — ${caseDoc.courtPlace}` : ""}
+                    {caseDoc.number ? ` • #${caseDoc.number}` : ""}
+                  </p>
+                )}
+            </div>
+
+            {/* 3. Add Hearing Button */}
+            <div className="md:absolute md:left-0 md:top-1/2 md:-translate-y-1/2 md:order-1">
+               <button
+                  disabled={isClosed}
+                  onClick={() => setOpenHearing(true)}
+                  className={`w-full rounded-lg px-4 py-2 text-sm font-semibold shadow-sm md:w-auto ${
+                    isClosed
+                      ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                      : "bg-blue-600 text-white hover:bg-blue-700 active:scale-95 transition-transform"
+                  }`}
+                >
+                  + Add hearing
+                </button>
+            </div>
+
           </div>
         </div>
 
         {/* Body */}
-        <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-8">
+        <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-8 bg-gray-50/50">
           {!loading && nextHearingLabel && (
-            <div className="mt-4 flex justify-center">
-              <div className="rounded-full border bg-white px-4 py-1 text-sm shadow">
-                Next hearing:{" "}
-                <span className="font-medium">{nextHearingLabel}</span>
+            <div className="mt-6 flex justify-center">
+              <div className="rounded-full border bg-white px-4 py-1 text-sm font-medium text-blue-800 shadow-sm ring-4 ring-blue-50">
+                Next hearing: <span className="font-bold">{nextHearingLabel}</span>
               </div>
             </div>
           )}
 
-          {error && <p className="mt-4 text-red-600">{error}</p>}
+          {error && <p className="mt-4 text-center text-red-600">{error}</p>}
+          
           {loading ? (
-            <div className="mt-10">Loading timeline…</div>
+            <div className="mt-10 text-center text-gray-500">Loading timeline…</div>
           ) : (
             <Timeline startedAt={caseDoc.createdAt} hearings={hearings} />
           )}
@@ -144,32 +147,30 @@ export default function CaseDetailOverlay({ caseId, onClose }) {
 
 /* ----------------------------- Timeline ----------------------------- */
 function Timeline({ startedAt, hearings }) {
-  // Build items (newest first; “Case started” last at the bottom)
   const items = [
     ...(hearings || [])
-  .slice()
-  .sort((a, b) => new Date(b.date) - new Date(a.date))
-  .map((h, i) => {
-    const isLatest = i === 0;              // newest card only
-    const hasNext  = Boolean(h.nextDate);
-    const title    = isLatest && hasNext
-      ? `Next hearing: ${new Date(h.nextDate).toLocaleDateString()}`
-      : new Date(h.date).toLocaleDateString();
+      .slice()
+      .sort((a, b) => new Date(b.date) - new Date(a.date))
+      .map((h, i) => {
+        const isLatest = i === 0;
+        const hasNext  = Boolean(h.nextDate);
+        const title    = isLatest && hasNext
+          ? `Next hearing: ${new Date(h.nextDate).toLocaleDateString()}`
+          : new Date(h.date).toLocaleDateString();
 
-    // Only show nextDate in the footer for the latest card
-    const footerBits = [
-      h.outcome ? `Outcome: ${h.outcome}` : null,
-    ].filter(Boolean);
+        const footerBits = [
+          h.outcome ? `Outcome: ${h.outcome}` : null,
+        ].filter(Boolean);
 
-    return {
-      key: h._id || `h-${i}`,
-      side: i % 2 === 0 ? "left" : "right",
-      title,
-      subtitle: h.venue || null,
-      body: h.notes || "",
-      footer: footerBits.length ? footerBits.join("  •  ") : null,
-    };
-  }),
+        return {
+          key: h._id || `h-${i}`,
+          side: i % 2 === 0 ? "left" : "right",
+          title,
+          subtitle: h.venue || null,
+          body: h.notes || "",
+          footer: footerBits.length ? footerBits.join("  •  ") : null,
+        };
+      }),
     {
       key: "start",
       side: (hearings?.length ?? 0) % 2 === 0 ? "left" : "right",
@@ -181,7 +182,6 @@ function Timeline({ startedAt, hearings }) {
     },
   ];
 
-  // Measure dots and clamp the line between the first and last dot
   const wrapRef = useRef(null);
   const [linePos, setLinePos] = useState({ top: 0, bottom: 0 });
 
@@ -192,12 +192,8 @@ function Timeline({ startedAt, hearings }) {
     if (!dots.length) return;
 
     const wrapBox = wrap.getBoundingClientRect();
-
-    // First and last dot (in visual order)
     const first = dots[0].getBoundingClientRect();
     const last = dots[dots.length - 1].getBoundingClientRect();
-
-    // Center of the dots relative to container
     const firstY = first.top - wrapBox.top + first.height / 2;
     const lastY = last.top - wrapBox.top + last.height / 2;
 
@@ -206,8 +202,7 @@ function Timeline({ startedAt, hearings }) {
 
   return (
     <section className="relative mx-auto mt-8 max-w-5xl" ref={wrapRef}>
-      <ul className="relative grid grid-cols-[1fr_40px_1fr] gap-x-6">
-        {/* Vertical line clamped between the first & last dot */}
+      <ul className="relative grid grid-cols-[1fr_30px_1fr] md:grid-cols-[1fr_40px_1fr] gap-x-2 md:gap-x-6">
         <div
           className="absolute left-1/2 w-0.5 -translate-x-1/2 bg-gray-300"
           style={{ top: `${linePos.top}px`, bottom: `${linePos.bottom}px` }}
@@ -222,28 +217,28 @@ function Timeline({ startedAt, hearings }) {
 
 function TimelineRow({ item }) {
   const card = (
-    <div className="rounded-xl border bg-white p-4 shadow-sm">
+    <div className="rounded-xl border bg-white p-4 shadow-sm hover:shadow-md transition-shadow">
       {item.subtitle && (
-        <div className="text-sm text-gray-600">{item.subtitle}</div>
+        <div className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">{item.subtitle}</div>
       )}
-      <h3 className="text-base font-semibold">{item.title}</h3>
-      {item.body && <p className="mt-2 whitespace-pre-wrap">{item.body}</p>}
-      {item.footer && <p className="mt-2 text-sm text-gray-600">{item.footer}</p>}
+      <h3 className="text-base font-bold text-gray-900">{item.title}</h3>
+      {item.body && <p className="mt-2 text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">{item.body}</p>}
+      {item.footer && <div className="mt-3 border-t pt-2 text-xs font-medium text-gray-500">{item.footer}</div>}
     </div>
   );
 
   return (
     <>
-      <div className="col-start-1 mb-12">
+      <div className="col-start-1 mb-8 md:mb-12">
         {item.side === "left" ? card : <div className="hidden md:block" />}
       </div>
-      <div className="relative col-start-2 mb-12 flex items-center justify-center">
+      <div className="relative col-start-2 mb-8 md:mb-12 flex items-start pt-6 justify-center">
         <span
           data-dot="1"
-          className="block h-3 w-3 rounded-full bg-black"
+          className="block h-3 w-3 rounded-full bg-gray-800 ring-4 ring-white"
         />
       </div>
-      <div className="col-start-3 mb-12">
+      <div className="col-start-3 mb-8 md:mb-12">
         {item.side === "right" ? card : <div className="hidden md:block" />}
       </div>
     </>
@@ -255,21 +250,19 @@ function HearingModal({ caseId, onClose, onSaved }) {
   const token = localStorage.getItem("token");
 
   const [form, setForm] = useState({
-    date: "",        // YYYY-MM-DD
+    date: "", 
     notes: "",
     outcome: "Adjourned",
-    nextDate: "",    // YYYY-MM-DD
+    nextDate: "", 
   });
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState("");
 
   const OUTCOMES = ["Adjourned", "Continued", "Judgment", "Settled", "Other"];
 
-  const onChange = (e) =>
-    setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
+  const onChange = (e) => setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
 
   const toIsoDateOnly = (yyyyMmDd) => {
-    // Convert a 'YYYY-MM-DD' to ISO at local midnight
     if (!yyyyMmDd) return undefined;
     const [y, m, d] = yyyyMmDd.split("-").map(Number);
     const dt = new Date(y, m - 1, d, 0, 0, 0, 0);
@@ -280,7 +273,6 @@ function HearingModal({ caseId, onClose, onSaved }) {
     if (!form.date) return "Please select the hearing date.";
     if (!form.outcome) return "Please select an outcome.";
     if (!form.nextDate) return "Please select the next hearing date.";
-    // Ensure next hearing date is not before the hearing date
     const d1 = new Date(form.date);
     const d2 = new Date(form.nextDate);
     if (d2 < d1) return "Next hearing date cannot be earlier than the hearing date.";
@@ -290,12 +282,8 @@ function HearingModal({ caseId, onClose, onSaved }) {
   const submit = async (e) => {
     e.preventDefault();
     const v = validate();
-    if (v) {
-      setErr(v);
-      return;
-    }
-    setSaving(true);
-    setErr("");
+    if (v) { setErr(v); return; }
+    setSaving(true); setErr("");
 
     try {
       const payload = {
@@ -303,22 +291,19 @@ function HearingModal({ caseId, onClose, onSaved }) {
         date: toIsoDateOnly(form.date),
         notes: form.notes?.trim() || undefined,
         outcome: form.outcome,
-        nextDate: toIsoDateOnly(form.nextDate), // <-- Requires backend support in Hearing model & route
+        nextDate: toIsoDateOnly(form.nextDate),
       };
 
       const res = await fetch(`${API}/api/hearings`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify(payload),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || "Failed to create hearing");
 
-      onSaved?.();  // refresh parent
-      onClose();    // close modal
+      onSaved?.(); 
+      onClose(); 
     } catch (e2) {
       setErr(e2.message);
     } finally {
@@ -329,28 +314,36 @@ function HearingModal({ caseId, onClose, onSaved }) {
   const notesMax = 1000;
 
   return (
-    <div className="fixed inset-0 z-[60] grid place-items-center bg-black/40 p-4">
-      <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Add hearing</h2>
+    // Z-Index 1060 to stay above the details overlay
+    <div className="fixed inset-0 z-[1060] grid place-items-center bg-black/50 p-0 md:p-4">
+      
+      {/* Mobile Optimized Container:
+          - w-[95%]: Almost full width on mobile
+          - max-h-[85vh]: Prevents overflow when keyboard opens
+          - overflow-y-auto: Allows scrolling inside the modal
+      */}
+      <div className="relative w-[95%] max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl ring-1 ring-black/5">
+        
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-bold text-gray-900">Add hearing</h2>
           <button
             onClick={onClose}
-            className="rounded-md border px-3 py-1.5 text-sm hover:bg-gray-50"
+            className="rounded-full bg-gray-100 p-2 text-gray-500 hover:bg-gray-200"
           >
             ✕
           </button>
         </div>
 
         {err && (
-          <p className="mt-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+          <div className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-700 border border-red-100">
             {err}
-          </p>
+          </div>
         )}
 
-        <form onSubmit={submit} className="mt-4 grid gap-4">
-          {/* Date (required) */}
+        <form onSubmit={submit} className="grid gap-5">
+          {/* Date */}
           <div>
-            <label className="block text-sm mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Date <span className="text-red-600">*</span>
             </label>
             <input
@@ -359,34 +352,31 @@ function HearingModal({ caseId, onClose, onSaved }) {
               value={form.date}
               onChange={onChange}
               required
-              className="w-full rounded-lg border px-3 py-2"
+              className="w-full rounded-lg border-gray-300 border px-3 py-2.5 shadow-sm focus:border-blue-500 focus:ring-blue-500"
             />
           </div>
 
-          {/* Notes (optional) */}
+          {/* Notes */}
           <div>
-            <label className="block text-sm mb-1">
-              What happened? <span className="text-gray-400 text-xs">(optional)</span>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Notes <span className="text-gray-400 font-normal text-xs">(optional)</span>
             </label>
             <textarea
               name="notes"
               value={form.notes}
-              onChange={(e) => {
-                const v = e.target.value.slice(0, notesMax);
-                setForm((f) => ({ ...f, notes: v }));
-              }}
-              rows={4}
-              placeholder="Notes / summary of the hearing"
-              className="w-full rounded-lg border px-3 py-2"
+              onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value.slice(0, notesMax) }))}
+              rows={3}
+              placeholder="Summary of the hearing..."
+              className="w-full rounded-lg border-gray-300 border px-3 py-2.5 shadow-sm focus:border-blue-500 focus:ring-blue-500"
             />
-            <div className="mt-1 text-xs text-gray-500">
+            <div className="mt-1 text-right text-xs text-gray-400">
               {form.notes.length}/{notesMax}
             </div>
           </div>
 
-          {/* Outcome (required) */}
+          {/* Outcome */}
           <div>
-            <label className="block text-sm mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Outcome <span className="text-red-600">*</span>
             </label>
             <select
@@ -394,7 +384,7 @@ function HearingModal({ caseId, onClose, onSaved }) {
               value={form.outcome}
               onChange={onChange}
               required
-              className="w-full rounded-lg border px-3 py-2 bg-white"
+              className="w-full rounded-lg border-gray-300 border px-3 py-2.5 bg-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
             >
               {OUTCOMES.map((o) => (
                 <option key={o} value={o}>{o}</option>
@@ -402,9 +392,9 @@ function HearingModal({ caseId, onClose, onSaved }) {
             </select>
           </div>
 
-          {/* Next hearing date (required) */}
+          {/* Next Date */}
           <div>
-            <label className="block text-sm mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Next hearing date <span className="text-red-600">*</span>
             </label>
             <input
@@ -413,25 +403,25 @@ function HearingModal({ caseId, onClose, onSaved }) {
               value={form.nextDate}
               onChange={onChange}
               required
-              className="w-full rounded-lg border px-3 py-2"
+              className="w-full rounded-lg border-gray-300 border px-3 py-2.5 shadow-sm focus:border-blue-500 focus:ring-blue-500"
             />
           </div>
 
-          <div className="mt-2 flex justify-end gap-2">
+          <div className="mt-2 flex gap-3 pt-2">
             <button
               type="button"
               onClick={onClose}
-              className="rounded-lg border px-4 py-2 hover:bg-gray-50"
               disabled={saving}
+              className="flex-1 rounded-lg border border-gray-300 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={saving}
-              className="rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white disabled:opacity-50"
+              className="flex-1 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-blue-700 disabled:opacity-70"
             >
-              {saving ? "Saving…" : "Save hearing"}
+              {saving ? "Saving..." : "Save Hearing"}
             </button>
           </div>
         </form>
@@ -439,4 +429,3 @@ function HearingModal({ caseId, onClose, onSaved }) {
     </div>
   );
 }
-
