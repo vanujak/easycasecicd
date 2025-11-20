@@ -32,7 +32,7 @@ EasyCase is a full-stack web application designed to streamline case management 
 1.  **Clone the repository:**
 
     ```bash
-    git clone https://github.com/your-username/easycase.git
+    git clone https://github.com/vanujak/easycase.git
     cd easycase
     ```
 
