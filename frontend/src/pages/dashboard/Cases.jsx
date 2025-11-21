@@ -332,6 +332,7 @@ function CaseModal({ onClose, onSaved }) {
     status: "open",
   });
   const [nextNumber, setNextNumber] = useState(null);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     let isMounted = true;
@@ -408,11 +409,14 @@ function CaseModal({ onClose, onSaved }) {
 
   useEffect(() => {
     const id = setTimeout(() => {
-      if (clientQuery.trim()) searchClients(clientQuery.trim());
-      else setClientResults([]);
+      if (clientQuery.trim() && !form.clientId) {
+        searchClients(clientQuery.trim());
+      } else if (!clientQuery.trim()) {
+        setClientResults([]);
+      }
     }, 300);
     return () => clearTimeout(id);
-  }, [clientQuery]);
+  }, [clientQuery, form.clientId]);
 
   const createClientInline = async () => {
     const payload = {
@@ -425,45 +429,58 @@ function CaseModal({ onClose, onSaved }) {
       Object.entries(payload).filter(([, v]) => v !== "" && v != null)
     );
 
-    const res = await fetch(`${API}/api/clients`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify(clean),
-    });
-    const data = await res.json();
+    try {
+      const res = await fetch(`${API}/api/clients`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify(clean),
+      });
+      const data = await res.json();
 
-    if (!res.ok) {
-      alert(data?.error || "Failed to create client");
-      return;
+      if (!res.ok) {
+        setError(data?.error || "Failed to create client");
+        return;
+      }
+
+      // Select the freshly created client
+      setForm((f) => ({ ...f, clientId: data._id }));
+      setClientQuery(data.name);
+      setClientResults([data]);
+      setAddClient(false);
+      setError(""); // Clear any errors
+    } catch (err) {
+      setError(err.message);
     }
-
-    // Select the freshly created client
-    setForm((f) => ({ ...f, clientId: data._id }));
-    setClientQuery(data.name);
-    setClientResults([data]);
-    setAddClient(false);
   };
 
   const submitCase = async (e) => {
     e.preventDefault();
+    
+    // Validate that a valid client is selected
     if (!form.clientId) {
-      alert("Please pick or add a client first.");
+      setError("Please select a valid client");
       return;
     }
 
+    setError(""); // Clear error if validation passes
+    
     const payload = Object.fromEntries(
       Object.entries(form).filter(([, v]) => v !== "")
     );
 
-    const res = await fetch(`${API}/api/cases`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify(payload),
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data?.error || "Failed to create case");
+    try {
+      const res = await fetch(`${API}/api/cases`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || "Failed to create case");
 
-    onSaved();
+      onSaved();
+    } catch (err) {
+      setError(err.message);
+    }
   };
 
   // IMPORTANT: z-[1000] keeps it above the sticky header
@@ -532,11 +549,28 @@ function CaseModal({ onClose, onSaved }) {
                 <div className="mt-2">
                   <input
                     value={clientQuery}
-                    onChange={(e) => setClientQuery(e.target.value)}
+                    onChange={(e) => {
+                      const newQuery = e.target.value;
+                      setClientQuery(newQuery);
+                      // If user clears or changes the input, reset the selected client
+                      if (newQuery !== clientQuery) {
+                        setForm((f) => ({ ...f, clientId: "" }));
+                      }
+                    }}
                     placeholder="Search client by name…"
-                    className="w-full rounded-lg border px-3 py-2"
+                    className={`w-full rounded-lg border px-3 py-2 ${
+                      error && !form.clientId ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''
+                    }`}
                   />
-                  {searching && <p className="text-xs mt-1">Searching…</p>}
+                  {searching && <p className="text-xs mt-1 text-gray-500">Searching…</p>}
+                  
+                  {/* Error message when no client selected on submit */}
+                  {error && !form.clientId && (
+                    <p className="mt-2 text-sm text-red-600">
+                      {error}
+                    </p>
+                  )}
+                  
                   {clientResults.length > 0 && (
                     <div className="mt-2 max-h-40 overflow-auto rounded-lg border">
                       {clientResults.map((c) => (
@@ -546,7 +580,9 @@ function CaseModal({ onClose, onSaved }) {
                           onClick={() => {
                             setForm((f) => ({ ...f, clientId: c._id }));
                             setClientQuery(c.name);
-                            setClientResults([]);
+                            setClientResults([]); // Clear results immediately
+                            setSearching(false); // Stop any pending search
+                            setError(""); // Clear any errors
                           }}
                           className={`block w-full text-left px-3 py-2 hover:bg-gray-50 ${
                             form.clientId === c._id ? "bg-blue-50" : ""
@@ -558,6 +594,21 @@ function CaseModal({ onClose, onSaved }) {
                         </button>
                       ))}
                     </div>
+                  )}
+                  
+                  {/* Show message when search returns no results */}
+                  {!searching && clientQuery.trim() && clientResults.length === 0 && !form.clientId && (
+                    <p className="mt-2 text-xs text-gray-500">
+                      No clients found. Try a different name or{" "}
+                      <button
+                        type="button"
+                        onClick={() => setAddClient(true)}
+                        className="text-blue-600 underline"
+                      >
+                        add a new client
+                      </button>
+                      .
+                    </p>
                   )}
                 </div>
               ) : (
@@ -728,4 +779,5 @@ function CaseModal({ onClose, onSaved }) {
     </div>
   );
 }
+
 
