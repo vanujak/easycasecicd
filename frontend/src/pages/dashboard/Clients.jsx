@@ -249,7 +249,7 @@ export default function Clients() {
                     className="w-full rounded-lg border px-3 py-2 bg-white"
                   >
                     <option value="">All</option>
-                    <option value="person">Person</option>
+                    <option value="individual">Individual</option>
                     <option value="organization">Organization</option>
                     <option value="company">Company</option>
                     <option value="government">Government</option>
