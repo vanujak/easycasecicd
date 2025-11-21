@@ -2,14 +2,18 @@ import { useEffect, useMemo, useState } from "react";
 import NavbarDashboard from "../../components/NavbarDashboard.jsx";
 import { SRI_LANKA_DISTRICTS } from "../../constants/districts.js";
 
+
 const API = import.meta.env.VITE_API_URL;
+
 
 export default function Clients() {
   const token = localStorage.getItem("token");
 
+
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
 
   // filters
   const [q, setQ] = useState("");
@@ -17,9 +21,11 @@ export default function Clients() {
   const [districtFilter, setDistrictFilter] = useState("");
   const [filtersOpen, setFiltersOpen] = useState(false);
 
+
   // modal
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState(null);
+
 
   const emptyForm = useMemo(() => ({
     type: "individual",
@@ -30,24 +36,30 @@ export default function Clients() {
     district: "",
   }), []);
 
+
   const [form, setForm] = useState(emptyForm);
+
 
   // ---------- LOAD CLIENTS ----------
   const fetchClients = async () => {
     setLoading(true);
     setError("");
 
+
     try {
       const search = new URLSearchParams();
       if (q.trim()) search.set("q", q.trim());
+
 
       const res = await fetch(
         `${API}/api/clients${search.toString() ? `?${search}` : ""}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
+
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || "Failed to load clients");
+
 
       setItems(data);
     } catch (e) {
@@ -57,7 +69,9 @@ export default function Clients() {
     }
   };
 
+
   useEffect(() => { fetchClients(); }, []);
+
 
   useEffect(() => {
     if (open) {
@@ -68,11 +82,13 @@ export default function Clients() {
     return () => { document.body.style.overflow = "auto"; };
   }, [open]);
 
+
   // ---------- FILTER CLIENTS ----------
   const filtered = items.filter((c) =>
     (!typeFilter || c.type === typeFilter) &&
     (!districtFilter || c.district === districtFilter)
   );
+
 
   // ---------- MODAL ----------
   const openCreate = () => {
@@ -80,6 +96,7 @@ export default function Clients() {
     setForm(emptyForm);
     setOpen(true);
   };
+
 
   const openEdit = (client) => {
     setEditing(client);
@@ -94,24 +111,29 @@ export default function Clients() {
     setOpen(true);
   };
 
+
   const closeModal = () => {
     setOpen(false);
     setEditing(null);
     setForm(emptyForm);
   };
 
+
   const onChange = (e) =>
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
+
 
   const submitForm = async (e) => {
     e.preventDefault();
     setError("");
+
 
     try {
       const url = editing
         ? `${API}/api/clients/${editing._id}`
         : `${API}/api/clients`;
       const method = editing ? "PUT" : "POST";
+
 
       const res = await fetch(url, {
         method,
@@ -122,8 +144,10 @@ export default function Clients() {
         body: JSON.stringify(form),
       });
 
+
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || "Save failed");
+
 
       closeModal();
       fetchClients();
@@ -132,9 +156,11 @@ export default function Clients() {
     }
   };
 
+
   const removeClient = async (client) => {
     const ok = confirm(`Delete client "${client.name}"? This cannot be undone.`);
     if (!ok) return;
+
 
     try {
       const res = await fetch(`${API}/api/clients/${client._id}`, {
@@ -142,8 +168,10 @@ export default function Clients() {
         headers: { Authorization: `Bearer ${token}` },
       });
 
+
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || "Delete failed");
+
 
       fetchClients();
     } catch (e) {
@@ -151,18 +179,17 @@ export default function Clients() {
     }
   };
 
-// ---------- UI ----------
+
+  // ---------- UI ----------
   return (
     <main className="min-h-screen bg-gray-50">
       <NavbarDashboard />
 
+
       <div className="mx-auto max-w-6xl px-4 py-8">
 
-        {/* === STICKY HEADER === 
-            - z-40: High layer.
-            - bg-gray-50: Matches background.
-            - border-b border-gray-50: Forces solid paint to prevent "bleeding" of borders underneath.
-        */}
+
+        {/* === STICKY HEADER === */}
         <div className="sticky top-0 z-40 bg-gray-50 pb-4 border-b border-gray-50">
           
           {/* Title + Button */}
@@ -176,9 +203,10 @@ export default function Clients() {
             </button>
           </div>
 
+
           {/* Filter Box */}
           <div className="mt-6 bg-white rounded-xl border p-4 shadow-sm">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold">Filters</h2>
               <button
                 onClick={() => setFiltersOpen((prev) => !prev)}
@@ -188,81 +216,87 @@ export default function Clients() {
               </button>
             </div>
 
-            <div className={`${filtersOpen ? "block" : "hidden"} md:block mt-4 space-y-4`}>
+            <div className={`${filtersOpen ? "block" : "hidden"} md:block`}>
               
-              {/* Search */}
-              <div>
-                <label className="block text-sm font-medium mb-1">Search by name</label>
-                <div className="flex gap-2">
-                  <input
-                    value={q}
-                    onChange={(e) => setQ(e.target.value)}
-                    placeholder="e.g., John"
-                    className="flex-1 rounded-lg border px-3 py-2"
-                  />
-                  <button
-                    onClick={fetchClients}
-                    className="rounded-lg bg-black px-4 py-2 text-white font-semibold"
+              {/* All filters in one row for desktop */}
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+                
+                {/* Search - takes more space */}
+                <div className="md:col-span-5">
+                  <label className="block text-sm font-medium mb-1">Search by name</label>
+                  <div className="flex gap-2">
+                    <input
+                      value={q}
+                      onChange={(e) => setQ(e.target.value)}
+                      placeholder="e.g., John"
+                      className="flex-1 rounded-lg border px-3 py-2"
+                    />
+                    <button
+                      onClick={fetchClients}
+                      className="rounded-lg bg-black px-4 py-2 text-white font-semibold whitespace-nowrap"
+                    >
+                      Search
+                    </button>
+                  </div>
+                </div>
+
+                {/* Client Type */}
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium mb-1">Client type</label>
+                  <select
+                    value={typeFilter}
+                    onChange={(e) => setTypeFilter(e.target.value)}
+                    className="w-full rounded-lg border px-3 py-2 bg-white"
                   >
-                    Search
+                    <option value="">All</option>
+                    <option value="person">Person</option>
+                    <option value="organization">Organization</option>
+                    <option value="company">Company</option>
+                    <option value="government">Government</option>
+                  </select>
+                </div>
+
+                {/* District */}
+                <div className="md:col-span-3">
+                  <label className="block text-sm font-medium mb-1">District</label>
+                  <select
+                    value={districtFilter}
+                    onChange={(e) => setDistrictFilter(e.target.value)}
+                    className="w-full rounded-lg border px-3 py-2 bg-white"
+                  >
+                    <option value="">All</option>
+                    {SRI_LANKA_DISTRICTS.map((d) => (
+                      <option key={d} value={d}>{d}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Reset Button */}
+                <div className="md:col-span-2 flex items-end">
+                  <button
+                    onClick={() => {
+                      setQ("");
+                      setTypeFilter("");
+                      setDistrictFilter("");
+                      fetchClients();
+                    }}
+                    className="w-full rounded-lg border px-4 py-2 text-sm hover:bg-gray-50 whitespace-nowrap"
+                  >
+                    Reset filters
                   </button>
                 </div>
               </div>
-
-              {/* Client Type */}
-              <div>
-                <label className="block text-sm font-medium mb-1">Client type</label>
-                <select
-                  value={typeFilter}
-                  onChange={(e) => setTypeFilter(e.target.value)}
-                  className="w-full rounded-lg border px-3 py-2 bg-white"
-                >
-                  <option value="">All</option>
-                  <option value="person">Person</option>
-                  <option value="organization">Organization</option>
-                  <option value="company">Company</option>
-                  <option value="government">Government</option>
-                </select>
-              </div>
-
-              {/* District */}
-              <div>
-                <label className="block text-sm font-medium mb-1">District</label>
-                <select
-                  value={districtFilter}
-                  onChange={(e) => setDistrictFilter(e.target.value)}
-                  className="w-full rounded-lg border px-3 py-2 bg-white"
-                >
-                  <option value="">All</option>
-                  {SRI_LANKA_DISTRICTS.map((d) => (
-                    <option key={d} value={d}>{d}</option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Reset */}
-              <button
-                onClick={() => {
-                  setQ("");
-                  setTypeFilter("");
-                  setDistrictFilter("");
-                  fetchClients();
-                }}
-                className="rounded-lg border px-4 py-2 text-sm hover:bg-gray-50"
-              >
-                Reset filters
-              </button>
             </div>
           </div>
         </div>
 
+
         {error && <p className="mt-4 text-red-600">{error}</p>}
 
-        {/* ------------------ LIST SECTION ------------------ 
-            - relative z-0: This forces the entire list to be on a lower layer ("0")
-              so it cannot render on top of the header ("40").
-        */}
+
+        {/* ------------------ LIST SECTION ------------------ */}
         <div className="mt-2 relative z-0">
+
 
           {/* MOBILE CARD VIEW */}
           <div className="space-y-3 md:hidden">
@@ -276,11 +310,13 @@ export default function Clients() {
                   <p className="font-semibold">{c.name}</p>
                   <p className="text-sm text-gray-600 capitalize">{c.type}</p>
 
+
                   <div className="mt-2 text-sm">
                     <p><span className="font-medium">Email:</span> {c.email || "—"}</p>
                     <p><span className="font-medium">Phone:</span> {c.phone || "—"}</p>
                     <p><span className="font-medium">District:</span> {c.district || "—"}</p>
                   </div>
+
 
                   <div className="mt-4 flex gap-2">
                     <button
@@ -301,10 +337,10 @@ export default function Clients() {
             )}
           </div>
 
+
           {/* DESKTOP TABLE */}
           <div className="hidden md:block overflow-x-auto rounded-xl border bg-white shadow-sm">
-             {/* (Table code remains the same) */}
-             <table className="min-w-full text-sm">
+            <table className="min-w-full text-sm">
               <thead className="bg-gray-100 text-left">
                 <tr>
                   <th className="px-4 py-3">Type</th>
@@ -341,41 +377,67 @@ export default function Clients() {
             </table>
           </div>
 
+
         </div>
       </div>
+
 
       {/* MODAL */}
       {open && (
         <div className="fixed inset-0 z-[1000] grid place-items-center bg-black/40 p-4">
-           {/* (Modal content remains the same) */}
-           <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl">
+          <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-semibold">{editing ? "Edit client" : "New client"}</h2>
               <button onClick={closeModal} className="rounded-md p-1 hover:bg-gray-100">✕</button>
             </div>
             <form onSubmit={submitForm} className="mt-4 grid gap-3">
-               {/* (Form inputs same as before) */}
-               <div className="grid md:grid-cols-2 gap-3">
-                <div><label className="block text-sm mb-1">Type</label><select name="type" value={form.type} onChange={onChange} className="w-full rounded-lg border px-3 py-2 bg-white"><option value="individual">Individual</option><option value="company">Company</option><option value="government">Government</option><option value="organization">Organization</option></select></div>
-                <div><label className="block text-sm mb-1">Name</label><input name="name" value={form.name} onChange={onChange} className="w-full rounded-lg border px-3 py-2" required /></div>
-               </div>
-               {/* ... rest of form ... */}
-               <div className="grid md:grid-cols-2 gap-3">
-                <div><label className="block text-sm mb-1">Email</label><input type="email" name="email" value={form.email} onChange={onChange} className="w-full rounded-lg border px-3 py-2" /></div>
-                <div><label className="block text-sm mb-1">Phone</label><input name="phone" value={form.phone} onChange={onChange} className="w-full rounded-lg border px-3 py-2" /></div>
-               </div>
-               <div><label className="block text-sm mb-1">Address</label><input name="address" value={form.address} onChange={onChange} className="w-full rounded-lg border px-3 py-2" /></div>
-               <div><label className="block text-sm mb-1">District</label><select name="district" value={form.district} onChange={onChange} className="w-full rounded-lg border px-3 py-2 bg-white"><option value="" disabled>Select district</option>{SRI_LANKA_DISTRICTS.map((d) => (<option key={d} value={d}>{d}</option>))}</select></div>
-               {error && <p className="text-red-600 text-sm">{error}</p>}
-               <div className="mt-2 flex justify-end gap-2">
+              <div className="grid md:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm mb-1">Type</label>
+                  <select name="type" value={form.type} onChange={onChange} className="w-full rounded-lg border px-3 py-2 bg-white">
+                    <option value="individual">Individual</option>
+                    <option value="company">Company</option>
+                    <option value="government">Government</option>
+                    <option value="organization">Organization</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm mb-1">Name</label>
+                  <input name="name" value={form.name} onChange={onChange} className="w-full rounded-lg border px-3 py-2" required />
+                </div>
+              </div>
+              <div className="grid md:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm mb-1">Email</label>
+                  <input type="email" name="email" value={form.email} onChange={onChange} className="w-full rounded-lg border px-3 py-2" />
+                </div>
+                <div>
+                  <label className="block text-sm mb-1">Phone</label>
+                  <input name="phone" value={form.phone} onChange={onChange} className="w-full rounded-lg border px-3 py-2" />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm mb-1">Address</label>
+                <input name="address" value={form.address} onChange={onChange} className="w-full rounded-lg border px-3 py-2" />
+              </div>
+              <div>
+                <label className="block text-sm mb-1">District</label>
+                <select name="district" value={form.district} onChange={onChange} className="w-full rounded-lg border px-3 py-2 bg-white">
+                  <option value="" disabled>Select district</option>
+                  {SRI_LANKA_DISTRICTS.map((d) => (
+                    <option key={d} value={d}>{d}</option>
+                  ))}
+                </select>
+              </div>
+              {error && <p className="text-red-600 text-sm">{error}</p>}
+              <div className="mt-2 flex justify-end gap-2">
                 <button type="button" onClick={closeModal} className="rounded-lg border px-4 py-2 hover:bg-gray-50">Cancel</button>
                 <button type="submit" className="rounded-lg bg-blue-600 px-4 py-2 text-white font-semibold">{editing ? "Save changes" : "Create client"}</button>
-               </div>
+              </div>
             </form>
-           </div>
+          </div>
         </div>
       )}
     </main>
   );
-
 }

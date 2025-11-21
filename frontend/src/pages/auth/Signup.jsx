@@ -139,8 +139,6 @@ export default function Signup() {
                 <option value="" disabled>Select gender</option>
                 <option>Male</option>
                 <option>Female</option>
-                <option>Prefer not to say</option>
-                <option>Other</option>
               </select>
             </div>
 

@@ -4,7 +4,9 @@ import { SRI_LANKA_DISTRICTS, SRI_LANKA_PROVINCES } from "../../constants/geo.js
 import { COURT_TYPES } from "../../constants/courts.js";
 import CaseDetailsOverlay from "../../components/CaseDetailsOverlay.jsx";
 
+
 const API = import.meta.env.VITE_API_URL;
+
 
 const CLIENT_TYPES = [
   "individual",
@@ -12,6 +14,7 @@ const CLIENT_TYPES = [
   "government",
   "organization",
 ];
+
 
 function normalizeSriLankaPhone(input = "") {
   const digits = input.replace(/[^\d]/g, "");
@@ -22,6 +25,7 @@ function normalizeSriLankaPhone(input = "") {
   return `+94${digits}`;
 }
 
+
 export default function Cases() {
   const token = localStorage.getItem("token");
   const [cases, setCases] = useState([]);
@@ -29,8 +33,10 @@ export default function Cases() {
   const [error, setError] = useState("");
   const [q, setQ] = useState("");
 
+
   const [openCaseModal, setOpenCaseModal] = useState(false);
   const [openCaseId, setOpenCaseId] = useState(null); // selected case (details drawer)
+
 
   // Prevent background scroll when overlay is open
   useEffect(() => {
@@ -44,8 +50,9 @@ export default function Cases() {
     };
   }, [openCaseId, openCaseModal]);
 
+
   const closeCase = async (id) => {
-    if (!confirm("Close this case? You won’t be able to add new hearings.")) return;
+    if (!confirm("Close this case? You won't be able to add new hearings.")) return;
     try {
       const res = await fetch(`${API}/api/cases/${id}/close`, {
         method: "PATCH",
@@ -58,6 +65,7 @@ export default function Cases() {
       alert(e.message);
     }
   };
+
 
   const deleteCase = async (id) => {
     if (!confirm("Delete this case permanently? This cannot be undone.")) return;
@@ -74,6 +82,7 @@ export default function Cases() {
     }
   };
 
+
   const fetchCases = async (query = "") => {
     setLoading(true); setError("");
     try {
@@ -89,19 +98,27 @@ export default function Cases() {
     }
   };
 
+
   useEffect(() => { fetchCases(); }, []);
+
+
+  // Reset filters function
+  const resetFilters = () => {
+    setQ("");
+    fetchCases("");
+  };
+
 
   // ---------- UI ----------
   return (
     <main className="min-h-screen bg-gray-50">
       <NavbarDashboard />
 
+
       <div className="mx-auto max-w-6xl px-4 py-8">
 
-        {/* === STICKY HEADER SECTION === 
-            Wraps Title, Button, and Search in a sticky container.
-            z-40 ensures it sits above the list but below modals.
-        */}
+
+        {/* === STICKY HEADER SECTION === */}
         <div className="sticky top-0 z-40 bg-gray-50 pb-4 border-b border-gray-50">
           
           {/* 1. Title + New Case Button */}
@@ -115,11 +132,12 @@ export default function Cases() {
             </button>
           </div>
 
-          {/* 2. Search Bar */}
+
+          {/* 2. Search Bar with Reset Button */}
           <div className="mt-4 bg-white rounded-xl border p-4 shadow-sm">
             <form
               onSubmit={(e) => { e.preventDefault(); fetchCases(q.trim()); }}
-              className="flex gap-2"
+              className="flex flex-col sm:flex-row gap-2"
             >
               <input
                 value={q}
@@ -129,20 +147,28 @@ export default function Cases() {
               />
               <button 
                 type="submit"
-                className="rounded-lg bg-black px-4 py-2 text-white font-semibold"
+                className="rounded-lg bg-black px-4 py-2 text-white font-semibold whitespace-nowrap"
               >
                 Search
+              </button>
+              <button 
+                type="button"
+                onClick={resetFilters}
+                className="rounded-lg border px-4 py-2 text-sm hover:bg-gray-50 whitespace-nowrap"
+              >
+                Reset filters
               </button>
             </form>
           </div>
         </div>
 
+
         {error && <p className="mt-4 text-red-600">{error}</p>}
 
-        {/* ------------------ LIST SECTION ------------------ 
-            relative z-0: Forces list to slide UNDER the z-40 header
-        */}
+
+        {/* ------------------ LIST SECTION ------------------ */}
         <div className="mt-4 relative z-0">
+
 
           {/* === MOBILE CARD VIEW (Visible only on small screens) === */}
           <div className="space-y-3 md:hidden">
@@ -171,11 +197,13 @@ export default function Cases() {
                     </span>
                   </div>
 
+
                   <div className="mt-3 text-sm text-gray-600 space-y-1">
                     <p><span className="font-medium text-gray-900">Client:</span> {c.clientName || "—"}</p>
                     <p><span className="font-medium text-gray-900">Court:</span> {c.courtType} {c.courtPlace ? `(${c.courtPlace})` : ""}</p>
                     <p><span className="font-medium text-gray-900">Date:</span> {c.createdAt ? new Date(c.createdAt).toLocaleDateString() : "—"}</p>
                   </div>
+
 
                   {/* Action Buttons */}
                   <div className="mt-4 flex gap-2 pt-3 border-t">
@@ -197,6 +225,7 @@ export default function Cases() {
               ))
             )}
           </div>
+
 
           {/* === DESKTOP TABLE VIEW (Hidden on mobile) === */}
           <div className="hidden md:block overflow-hidden rounded-xl border bg-white shadow-sm">
@@ -267,6 +296,7 @@ export default function Cases() {
         </div>
       </div>
 
+
       {/* Modals / Overlays */}
       {openCaseId && (
         <CaseDetailsOverlay
@@ -288,9 +318,11 @@ export default function Cases() {
   );
 }
 
+
 /* ----------------------------- CaseModal ----------------------------- */
 function CaseModal({ onClose, onSaved }) {
   const token = localStorage.getItem("token");
+
 
   const [form, setForm] = useState({
     title: "",
@@ -302,6 +334,7 @@ function CaseModal({ onClose, onSaved }) {
     status: "open",
   });
   const [nextNumber, setNextNumber] = useState(null);
+
 
   useEffect(() => {
     let isMounted = true;
@@ -319,13 +352,16 @@ function CaseModal({ onClose, onSaved }) {
     return () => { isMounted = false; };
   }, [token]);
 
+
   // client search (async)
   const [clientQuery, setClientQuery] = useState("");
   const [clientResults, setClientResults] = useState([]);
   const [searching, setSearching] = useState(false);
 
+
   // toggle "add new client here"
   const [addClient, setAddClient] = useState(false);
+
 
   // new client form
   const [newClient, setNewClient] = useState({
@@ -336,6 +372,7 @@ function CaseModal({ onClose, onSaved }) {
     address: "",
     district: "", 
   });
+
 
   const canPickDistrict = useMemo(
     () => form.courtType === "District Court" || form.courtType === "High Court",
@@ -350,6 +387,7 @@ function CaseModal({ onClose, onSaved }) {
     [form.courtType]
   );
 
+
   useEffect(() => {
     if (fixedColombo) {
       setForm((f) => ({ ...f, courtPlace: "Colombo" }));
@@ -358,7 +396,9 @@ function CaseModal({ onClose, onSaved }) {
     }
   }, [fixedColombo]);
 
+
   const onChange = (e) => setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
+
 
   // search clients by name
   const searchClients = async (q) => {
@@ -376,6 +416,7 @@ function CaseModal({ onClose, onSaved }) {
     }
   };
 
+
   useEffect(() => {
     const id = setTimeout(() => {
       if (clientQuery.trim()) searchClients(clientQuery.trim());
@@ -384,16 +425,19 @@ function CaseModal({ onClose, onSaved }) {
     return () => clearTimeout(id);
   }, [clientQuery]);
 
+
   const createClientInline = async () => {
     const payload = {
       ...newClient,
       phone: newClient.phone ? normalizeSriLankaPhone(newClient.phone) : undefined,
     };
 
+
     // remove "" and undefined 
     const clean = Object.fromEntries(
       Object.entries(payload).filter(([, v]) => v !== "" && v != null)
     );
+
 
     const res = await fetch(`${API}/api/clients`, {
       method: "POST",
@@ -402,10 +446,12 @@ function CaseModal({ onClose, onSaved }) {
     });
     const data = await res.json();
 
+
     if (!res.ok) {
       alert(data?.error || "Failed to create client");
       return;
     }
+
 
     // Select the freshly created client
     setForm((f) => ({ ...f, clientId: data._id }));
@@ -414,6 +460,7 @@ function CaseModal({ onClose, onSaved }) {
     setAddClient(false);
   };
 
+
   const submitCase = async (e) => {
     e.preventDefault();
     if (!form.clientId) {
@@ -421,9 +468,11 @@ function CaseModal({ onClose, onSaved }) {
       return;
     }
 
+
     const payload = Object.fromEntries(
       Object.entries(form).filter(([, v]) => v !== "")
     );
+
 
     const res = await fetch(`${API}/api/cases`, {
       method: "POST",
@@ -433,8 +482,10 @@ function CaseModal({ onClose, onSaved }) {
     const data = await res.json();
     if (!res.ok) throw new Error(data?.error || "Failed to create case");
 
+
     onSaved();
   };
+
 
   // IMPORTANT: z-[1000] keeps it above the sticky header
   return (
@@ -444,6 +495,7 @@ function CaseModal({ onClose, onSaved }) {
           <h2 className="text-xl font-semibold">New case</h2>
           <button onClick={onClose} className="rounded-md p-1 hover:bg-gray-100">✕</button>
         </div>
+
 
         <form onSubmit={submitCase} className="mt-4">
           <div className={`grid gap-4 ${addClient ? "max-h-[70vh] overflow-y-auto pr-2" : ""}`}>
@@ -470,6 +522,7 @@ function CaseModal({ onClose, onSaved }) {
               </div>
             </div>
 
+
             {/* Type of case */}
             <div>
               <label className="block text-sm mb-1">Type of case</label>
@@ -481,6 +534,7 @@ function CaseModal({ onClose, onSaved }) {
                 className="w-full rounded-lg border px-3 py-2"
               />
             </div>
+
 
             {/* Client section */}
             <div className="rounded-lg border p-3">
@@ -494,6 +548,7 @@ function CaseModal({ onClose, onSaved }) {
                   {addClient ? "Pick existing instead" : "Add new client here"}
                 </button>
               </div>
+
 
               {!addClient ? (
                 // --- Pick existing client ---
@@ -559,6 +614,7 @@ function CaseModal({ onClose, onSaved }) {
                     </div>
                   </div>
 
+
                   <div className="grid md:grid-cols-2 gap-3">
                     <div>
                       <label className="block text-sm mb-1">Email</label>
@@ -581,6 +637,7 @@ function CaseModal({ onClose, onSaved }) {
                     </div>
                   </div>
 
+
                   <div>
                     <label className="block text-sm mb-1">Address</label>
                     <input
@@ -590,6 +647,7 @@ function CaseModal({ onClose, onSaved }) {
                       className="w-full rounded-lg border px-3 py-2"
                     />
                   </div>
+
 
                   <div>
                     <label className="block text-sm mb-1">District</label>
@@ -606,6 +664,7 @@ function CaseModal({ onClose, onSaved }) {
                     </select>
                   </div>
 
+
                   <div className="mt-1">
                     <button
                       type="button"
@@ -618,6 +677,7 @@ function CaseModal({ onClose, onSaved }) {
                 </div>
               )}
             </div>
+
 
             {/* Court / Place */}
             <div className="grid md:grid-cols-2 gap-3">
@@ -665,6 +725,7 @@ function CaseModal({ onClose, onSaved }) {
               </div>
             </div>
 
+
             {/* Status (display only) */}
             <div>
               <label className="block text-sm mb-1">Status</label>
@@ -679,6 +740,7 @@ function CaseModal({ onClose, onSaved }) {
               </p>
             </div>
           </div>
+
 
           {/* Footer buttons */}
           <div className="mt-4 flex justify-end gap-2">

@@ -1,9 +1,15 @@
 import { Link, NavLink } from "react-router-dom";
 import { useState } from "react";
 
+
 export default function NavbarHome() {
   const [open, setOpen] = useState(false);
+  
   const base = "px-3 py-2 rounded-lg font-medium text-lg transition-colors hover:bg-blue-50 hover:text-blue-700";
+  const active = "px-3 py-2 rounded-lg font-semibold text-lg bg-blue-100 text-blue-800";
+
+  const cls = ({ isActive }) => (isActive ? active : base);
+
 
   return (
     <nav className="border-b bg-white">
@@ -13,6 +19,7 @@ export default function NavbarHome() {
           <span className="!text-[30px] font-semibold">EasyCase</span>
         </Link>
 
+
         <button className="md:hidden p-2 rounded-lg hover:bg-gray-100"
                 onClick={() => setOpen(v => !v)} aria-label="Toggle menu">
           <svg width="24" height="24" fill="none" stroke="currentColor">
@@ -20,22 +27,26 @@ export default function NavbarHome() {
           </svg>
         </button>
 
+
         <div className="hidden md:flex items-center gap-2">
-          <NavLink to="/login" className={base}>Log in</NavLink>
-          <NavLink to="/signup" className={base}>
-            Sign up
-          </NavLink>
-          <NavLink to="/contact" className={base}>Contact Us</NavLink>
+          <NavLink to="/login" className={cls}>Log in</NavLink>
+          <NavLink to="/signup" className={cls}>Sign up</NavLink>
+          <NavLink to="/contact" className={cls}>Contact Us</NavLink>
         </div>
       </div>
+
 
       {open && (
         <div className="md:hidden border-t bg-white">
           <div className="mx-auto max-w-6xl px-4 py-3 flex flex-col gap-2">
-            <NavLink to="/contact" onClick={() => setOpen(false)} className={base}>Contact Us</NavLink>
-            <NavLink to="/login" onClick={() => setOpen(false)} className={base}>Log in</NavLink>
-            <NavLink to="/signup" onClick={() => setOpen(false)} className="px-4 py-2 rounded-lg font-semibold bg-black text-white">
+            <NavLink to="/login" onClick={() => setOpen(false)} className={cls}>
+              Log in
+            </NavLink>
+            <NavLink to="/signup" onClick={() => setOpen(false)} className={cls}>
               Sign up
+            </NavLink>
+            <NavLink to="/contact" onClick={() => setOpen(false)} className={cls}>
+              Contact Us
             </NavLink>
           </div>
         </div>

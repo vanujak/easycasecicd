@@ -10,7 +10,7 @@ const userSchema = new mongoose.Schema(
     email:     { type: String, required: true, unique: true, lowercase: true, trim: true },
     mobile:    { type: String, required: true, match: sriLankaMobile },
     dob:       { type: Date, required: true },
-    gender:    { type: String, enum: ["Male", "Female", "Other", "Prefer not to say"], required: true },
+    gender:    { type: String, enum: ["Male", "Female"], required: true },
     barRegNo:  { type: String, required: true, unique: true, trim: true },
     passwordHash: { type: String, required: true }, // store HASH, not plain password
     isActive:  { type: Boolean, default: true }
