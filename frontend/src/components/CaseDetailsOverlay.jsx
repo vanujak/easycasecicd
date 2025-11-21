@@ -112,11 +112,18 @@ export default function CaseDetailOverlay({ caseId, onClose }) {
 
         {/* Body */}
         <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-8 bg-gray-50/50">
-          {!loading && nextHearingLabel && (
+          {/* Conditional Badge: Show "Case Closed" if closed, otherwise show next hearing */}
+          {!loading && (
             <div className="mt-6 flex justify-center">
-              <div className="rounded-full border bg-white px-4 py-1 text-sm font-medium text-blue-800 shadow-sm ring-4 ring-blue-50">
-                Next hearing: <span className="font-bold">{nextHearingLabel}</span>
-              </div>
+              {isClosed ? (
+                <div className="rounded-full border border-red-200 bg-red-50 px-4 py-1 text-sm font-medium text-red-800 shadow-sm ring-4 ring-red-50">
+                  <span className="font-bold">Case Closed</span>
+                </div>
+              ) : nextHearingLabel ? (
+                <div className="rounded-full border bg-white px-4 py-1 text-sm font-medium text-blue-800 shadow-sm ring-4 ring-blue-50">
+                  Next hearing: <span className="font-bold">{nextHearingLabel}</span>
+                </div>
+              ) : null}
             </div>
           )}
 
@@ -145,6 +152,7 @@ export default function CaseDetailOverlay({ caseId, onClose }) {
   );
 }
 
+
 /* ----------------------------- Timeline ----------------------------- */
 function Timeline({ startedAt, hearings }) {
   const items = [
@@ -153,13 +161,13 @@ function Timeline({ startedAt, hearings }) {
       .sort((a, b) => new Date(b.date) - new Date(a.date))
       .map((h, i) => {
         const isLatest = i === 0;
-        const hasNext  = Boolean(h.nextDate);
-        const title    = isLatest && hasNext
-          ? `Next hearing: ${new Date(h.nextDate).toLocaleDateString()}`
-          : new Date(h.date).toLocaleDateString();
+        // Always show the hearing date, not the next date
+        const title = new Date(h.date).toLocaleDateString();
 
         const footerBits = [
           h.outcome ? `Outcome: ${h.outcome}` : null,
+          // Show next hearing date in footer only if it exists
+          h.nextDate && isLatest ? `Next hearing: ${new Date(h.nextDate).toLocaleDateString()}` : null,
         ].filter(Boolean);
 
         return {
@@ -215,6 +223,7 @@ function Timeline({ startedAt, hearings }) {
   );
 }
 
+
 function TimelineRow({ item }) {
   const card = (
     <div className="rounded-xl border bg-white p-4 shadow-sm hover:shadow-md transition-shadow">
@@ -244,6 +253,7 @@ function TimelineRow({ item }) {
     </>
   );
 }
+
 
 /* --------------------------- Hearing Modal --------------------------- */
 function HearingModal({ caseId, onClose, onSaved }) {
@@ -317,11 +327,7 @@ function HearingModal({ caseId, onClose, onSaved }) {
     // Z-Index 1060 to stay above the details overlay
     <div className="fixed inset-0 z-[1060] grid place-items-center bg-black/50 p-0 md:p-4">
       
-      {/* Mobile Optimized Container:
-          - w-[95%]: Almost full width on mobile
-          - max-h-[85vh]: Prevents overflow when keyboard opens
-          - overflow-y-auto: Allows scrolling inside the modal
-      */}
+      {/* Mobile Optimized Container */}
       <div className="relative w-[95%] max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl ring-1 ring-black/5">
         
         <div className="flex items-center justify-between mb-4">
