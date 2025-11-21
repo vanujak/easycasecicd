@@ -323,18 +323,15 @@ export default function Cases() {
 function CaseModal({ onClose, onSaved }) {
   const token = localStorage.getItem("token");
 
-
   const [form, setForm] = useState({
     title: "",
     type: "",
     clientId: "",
-    // Safety check: uses first court type, or empty string if undefined
     courtType: COURT_TYPES?.[0] || "",
     courtPlace: "",
     status: "open",
   });
   const [nextNumber, setNextNumber] = useState(null);
-
 
   useEffect(() => {
     let isMounted = true;
@@ -352,16 +349,13 @@ function CaseModal({ onClose, onSaved }) {
     return () => { isMounted = false; };
   }, [token]);
 
-
   // client search (async)
   const [clientQuery, setClientQuery] = useState("");
   const [clientResults, setClientResults] = useState([]);
   const [searching, setSearching] = useState(false);
 
-
   // toggle "add new client here"
   const [addClient, setAddClient] = useState(false);
-
 
   // new client form
   const [newClient, setNewClient] = useState({
@@ -372,7 +366,6 @@ function CaseModal({ onClose, onSaved }) {
     address: "",
     district: "", 
   });
-
 
   const canPickDistrict = useMemo(
     () => form.courtType === "District Court" || form.courtType === "High Court",
@@ -387,7 +380,6 @@ function CaseModal({ onClose, onSaved }) {
     [form.courtType]
   );
 
-
   useEffect(() => {
     if (fixedColombo) {
       setForm((f) => ({ ...f, courtPlace: "Colombo" }));
@@ -396,9 +388,7 @@ function CaseModal({ onClose, onSaved }) {
     }
   }, [fixedColombo]);
 
-
   const onChange = (e) => setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
-
 
   // search clients by name
   const searchClients = async (q) => {
@@ -416,7 +406,6 @@ function CaseModal({ onClose, onSaved }) {
     }
   };
 
-
   useEffect(() => {
     const id = setTimeout(() => {
       if (clientQuery.trim()) searchClients(clientQuery.trim());
@@ -425,19 +414,16 @@ function CaseModal({ onClose, onSaved }) {
     return () => clearTimeout(id);
   }, [clientQuery]);
 
-
   const createClientInline = async () => {
     const payload = {
       ...newClient,
       phone: newClient.phone ? normalizeSriLankaPhone(newClient.phone) : undefined,
     };
 
-
     // remove "" and undefined 
     const clean = Object.fromEntries(
       Object.entries(payload).filter(([, v]) => v !== "" && v != null)
     );
-
 
     const res = await fetch(`${API}/api/clients`, {
       method: "POST",
@@ -446,12 +432,10 @@ function CaseModal({ onClose, onSaved }) {
     });
     const data = await res.json();
 
-
     if (!res.ok) {
       alert(data?.error || "Failed to create client");
       return;
     }
-
 
     // Select the freshly created client
     setForm((f) => ({ ...f, clientId: data._id }));
@@ -460,7 +444,6 @@ function CaseModal({ onClose, onSaved }) {
     setAddClient(false);
   };
 
-
   const submitCase = async (e) => {
     e.preventDefault();
     if (!form.clientId) {
@@ -468,11 +451,9 @@ function CaseModal({ onClose, onSaved }) {
       return;
     }
 
-
     const payload = Object.fromEntries(
       Object.entries(form).filter(([, v]) => v !== "")
     );
-
 
     const res = await fetch(`${API}/api/cases`, {
       method: "POST",
@@ -482,23 +463,22 @@ function CaseModal({ onClose, onSaved }) {
     const data = await res.json();
     if (!res.ok) throw new Error(data?.error || "Failed to create case");
 
-
     onSaved();
   };
 
-
   // IMPORTANT: z-[1000] keeps it above the sticky header
   return (
-    <div className="fixed inset-0 z-[1000] grid place-items-center bg-black/40 p-4">
-      <div className="w-full max-w-2xl rounded-2xl bg-white p-6 shadow-xl">
-        <div className="flex items-center justify-between">
+    <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/40 p-4 overflow-y-auto">
+      <div className="w-full max-w-2xl my-8 rounded-2xl bg-white shadow-xl flex flex-col max-h-[calc(100vh-4rem)]">
+        {/* Sticky Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b bg-white rounded-t-2xl flex-shrink-0">
           <h2 className="text-xl font-semibold">New case</h2>
           <button onClick={onClose} className="rounded-md p-1 hover:bg-gray-100">✕</button>
         </div>
 
-
-        <form onSubmit={submitCase} className="mt-4">
-          <div className={`grid gap-4 ${addClient ? "max-h-[70vh] overflow-y-auto pr-2" : ""}`}>
+        {/* Scrollable Content */}
+        <div className="overflow-y-auto flex-1 px-6 py-4">
+          <form onSubmit={submitCase} className="space-y-4">
             
             {/* Title + Case number */}
             <div className="grid md:grid-cols-2 gap-3">
@@ -522,7 +502,6 @@ function CaseModal({ onClose, onSaved }) {
               </div>
             </div>
 
-
             {/* Type of case */}
             <div>
               <label className="block text-sm mb-1">Type of case</label>
@@ -534,7 +513,6 @@ function CaseModal({ onClose, onSaved }) {
                 className="w-full rounded-lg border px-3 py-2"
               />
             </div>
-
 
             {/* Client section */}
             <div className="rounded-lg border p-3">
@@ -548,7 +526,6 @@ function CaseModal({ onClose, onSaved }) {
                   {addClient ? "Pick existing instead" : "Add new client here"}
                 </button>
               </div>
-
 
               {!addClient ? (
                 // --- Pick existing client ---
@@ -614,7 +591,6 @@ function CaseModal({ onClose, onSaved }) {
                     </div>
                   </div>
 
-
                   <div className="grid md:grid-cols-2 gap-3">
                     <div>
                       <label className="block text-sm mb-1">Email</label>
@@ -637,7 +613,6 @@ function CaseModal({ onClose, onSaved }) {
                     </div>
                   </div>
 
-
                   <div>
                     <label className="block text-sm mb-1">Address</label>
                     <input
@@ -647,7 +622,6 @@ function CaseModal({ onClose, onSaved }) {
                       className="w-full rounded-lg border px-3 py-2"
                     />
                   </div>
-
 
                   <div>
                     <label className="block text-sm mb-1">District</label>
@@ -664,7 +638,6 @@ function CaseModal({ onClose, onSaved }) {
                     </select>
                   </div>
 
-
                   <div className="mt-1">
                     <button
                       type="button"
@@ -677,7 +650,6 @@ function CaseModal({ onClose, onSaved }) {
                 </div>
               )}
             </div>
-
 
             {/* Court / Place */}
             <div className="grid md:grid-cols-2 gap-3">
@@ -725,7 +697,6 @@ function CaseModal({ onClose, onSaved }) {
               </div>
             </div>
 
-
             {/* Status (display only) */}
             <div>
               <label className="block text-sm mb-1">Status</label>
@@ -739,22 +710,22 @@ function CaseModal({ onClose, onSaved }) {
                 Cases always start as open. You can close the case from the table.
               </p>
             </div>
-          </div>
 
-
-          {/* Footer buttons */}
-          <div className="mt-4 flex justify-end gap-2">
-            <button type="button" onClick={onClose}
-                    className="rounded-lg border px-4 py-2 hover:bg-gray-50">
-              Cancel
-            </button>
-            <button type="submit"
-                    className="rounded-lg bg-blue-600 px-4 py-2 text-white font-semibold">
-              Create case
-            </button>
-          </div>
-        </form>
+            {/* Footer buttons - inside the form, scrolls with content */}
+            <div className="pt-4 border-t flex justify-end gap-2">
+              <button type="button" onClick={onClose}
+                      className="rounded-lg border px-4 py-2 hover:bg-gray-50">
+                Cancel
+              </button>
+              <button type="submit"
+                      className="rounded-lg bg-blue-600 px-4 py-2 text-white font-semibold">
+                Create case
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );
 }
+

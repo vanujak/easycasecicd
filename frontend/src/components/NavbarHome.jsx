@@ -20,10 +20,47 @@ export default function NavbarHome() {
         </Link>
 
 
-        <button className="md:hidden p-2 rounded-lg hover:bg-gray-100"
-                onClick={() => setOpen(v => !v)} aria-label="Toggle menu">
-          <svg width="24" height="24" fill="none" stroke="currentColor">
-            <path strokeWidth="2" d="M4 7h16M4 12h16M4 17h16" />
+        {/* Animated hamburger button */}
+        <button 
+          className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+          onClick={() => setOpen(v => !v)} 
+          aria-label="Toggle menu"
+          aria-expanded={open}
+        >
+          <svg className="w-6 h-6 fill-current" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+            <rect 
+              className={`origin-center transition-all duration-300 ease-out ${
+                open 
+                  ? 'translate-y-0 rotate-45' 
+                  : '-translate-y-[5px]'
+              }`}
+              y="7" 
+              width="16" 
+              height="2" 
+              rx="1"
+            />
+            <rect 
+              className={`origin-center transition-all duration-300 ease-out ${
+                open 
+                  ? 'opacity-0 scale-0' 
+                  : 'opacity-100 scale-100'
+              }`}
+              y="7" 
+              width="16" 
+              height="2" 
+              rx="1"
+            />
+            <rect 
+              className={`origin-center transition-all duration-300 ease-out ${
+                open 
+                  ? 'translate-y-0 -rotate-45' 
+                  : 'translate-y-[5px]'
+              }`}
+              y="7" 
+              width="16" 
+              height="2" 
+              rx="1"
+            />
           </svg>
         </button>
 
@@ -36,21 +73,24 @@ export default function NavbarHome() {
       </div>
 
 
-      {open && (
-        <div className="md:hidden border-t bg-white">
-          <div className="mx-auto max-w-6xl px-4 py-3 flex flex-col gap-2">
-            <NavLink to="/login" onClick={() => setOpen(false)} className={cls}>
-              Log in
-            </NavLink>
-            <NavLink to="/signup" onClick={() => setOpen(false)} className={cls}>
-              Sign up
-            </NavLink>
-            <NavLink to="/contact" onClick={() => setOpen(false)} className={cls}>
-              Contact Us
-            </NavLink>
-          </div>
+      {/* Mobile menu with smooth slide-down animation */}
+      <div 
+        className={`md:hidden border-t bg-white overflow-hidden transition-all duration-300 ease-in-out ${
+          open ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+        }`}
+      >
+        <div className="mx-auto max-w-6xl px-4 py-3 flex flex-col gap-2">
+          <NavLink to="/login" onClick={() => setOpen(false)} className={cls}>
+            Log in
+          </NavLink>
+          <NavLink to="/signup" onClick={() => setOpen(false)} className={cls}>
+            Sign up
+          </NavLink>
+          <NavLink to="/contact" onClick={() => setOpen(false)} className={cls}>
+            Contact Us
+          </NavLink>
         </div>
-      )}
+      </div>
     </nav>
   );
 }
