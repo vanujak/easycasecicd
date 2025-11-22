@@ -45,7 +45,7 @@ export default function Dashboard() {
         try {
           const meRes = await fetch(`${API}/auth/me`, {
             method: "GET",
-            headers: { "Content-Type": "application/json",Authorization: `Bearer ${token}` },
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
           });
           const me = await meRes.json();
           if (meRes.ok && me?.name) setUserName(me.name);
@@ -61,10 +61,14 @@ export default function Dashboard() {
         if (!cRes.ok) throw new Error(cases?.error || "Failed to load cases");
         setActiveCases(Array.isArray(cases) ? cases.filter(c => c.status === "open").length : 0);
 
-        // 3) hearings (future nextDate only)
+        // 3) hearings (future nextDate only, and only from open cases)
         const now = Date.now();
         const rows = [];
-        for (const c of cases) {
+        
+        // Filter only open cases
+        const openCases = Array.isArray(cases) ? cases.filter(c => c.status === "open") : [];
+        
+        for (const c of openCases) {
           const hRes = await fetch(`${API}/api/hearings?caseId=${c._id}`, {
             headers: { Authorization: `Bearer ${token}` },
           });
@@ -78,6 +82,7 @@ export default function Dashboard() {
                 caseId: c._id,
                 caseTitle: c.title,
                 caseNumber: c.number,
+                caseStatus: c.status, // Add status for reference
                 outcome: h.outcome || "",
                 nextDate: h.nextDate,
               });
