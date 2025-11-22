@@ -2,18 +2,14 @@ import { useEffect, useMemo, useState } from "react";
 import NavbarDashboard from "../../components/NavbarDashboard.jsx";
 import { SRI_LANKA_DISTRICTS } from "../../constants/districts.js";
 
-
 const API = import.meta.env.VITE_API_URL;
-
 
 export default function Clients() {
   const token = localStorage.getItem("token");
 
-
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
 
   // filters
   const [q, setQ] = useState("");
@@ -21,11 +17,17 @@ export default function Clients() {
   const [districtFilter, setDistrictFilter] = useState("");
   const [filtersOpen, setFiltersOpen] = useState(false);
 
-
   // modal
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState(null);
 
+  // Confirmation dialog state
+  const [confirmDialog, setConfirmDialog] = useState({
+    isOpen: false,
+    title: "",
+    message: "",
+    onConfirm: () => {},
+  });
 
   const emptyForm = useMemo(() => ({
     type: "individual",
@@ -36,30 +38,24 @@ export default function Clients() {
     district: "",
   }), []);
 
-
   const [form, setForm] = useState(emptyForm);
-
 
   // ---------- LOAD CLIENTS ----------
   const fetchClients = async () => {
     setLoading(true);
     setError("");
 
-
     try {
       const search = new URLSearchParams();
       if (q.trim()) search.set("q", q.trim());
-
 
       const res = await fetch(
         `${API}/api/clients${search.toString() ? `?${search}` : ""}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || "Failed to load clients");
-
 
       setItems(data);
     } catch (e) {
@@ -69,9 +65,7 @@ export default function Clients() {
     }
   };
 
-
   useEffect(() => { fetchClients(); }, []);
-
 
   useEffect(() => {
     if (open) {
@@ -82,13 +76,11 @@ export default function Clients() {
     return () => { document.body.style.overflow = "auto"; };
   }, [open]);
 
-
   // ---------- FILTER CLIENTS ----------
   const filtered = items.filter((c) =>
     (!typeFilter || c.type === typeFilter) &&
     (!districtFilter || c.district === districtFilter)
   );
-
 
   // ---------- MODAL ----------
   const openCreate = () => {
@@ -96,7 +88,6 @@ export default function Clients() {
     setForm(emptyForm);
     setOpen(true);
   };
-
 
   const openEdit = (client) => {
     setEditing(client);
@@ -111,29 +102,24 @@ export default function Clients() {
     setOpen(true);
   };
 
-
   const closeModal = () => {
     setOpen(false);
     setEditing(null);
     setForm(emptyForm);
   };
 
-
   const onChange = (e) =>
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
-
 
   const submitForm = async (e) => {
     e.preventDefault();
     setError("");
-
 
     try {
       const url = editing
         ? `${API}/api/clients/${editing._id}`
         : `${API}/api/clients`;
       const method = editing ? "PUT" : "POST";
-
 
       const res = await fetch(url, {
         method,
@@ -144,10 +130,8 @@ export default function Clients() {
         body: JSON.stringify(form),
       });
 
-
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || "Save failed");
-
 
       closeModal();
       fetchClients();
@@ -156,38 +140,38 @@ export default function Clients() {
     }
   };
 
-
   const removeClient = async (client) => {
-    const ok = confirm(`Delete client "${client.name}"? This cannot be undone.`);
-    if (!ok) return;
+    setConfirmDialog({
+      isOpen: true,
+      title: "Delete Client",
+      message: `Delete client "${client.name}"? This cannot be undone.`,
+      onConfirm: async () => {
+        try {
+          const res = await fetch(`${API}/api/clients/${client._id}`, {
+            method: "DELETE",
+            headers: { Authorization: `Bearer ${token}` },
+          });
 
+          const data = await res.json();
+          if (!res.ok) {
+            setError(data?.error || "Delete failed");
+            return;
+          }
 
-    try {
-      const res = await fetch(`${API}/api/clients/${client._id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data?.error || "Delete failed");
-
-
-      fetchClients();
-    } catch (e) {
-      setError(e.message);
-    }
+          fetchClients();
+        } catch (e) {
+          setError(e.message);
+        }
+      }
+    });
   };
-
 
   // ---------- UI ----------
   return (
     <main className="min-h-screen bg-gray-50">
       <NavbarDashboard />
 
-
       <div className="mx-auto max-w-6xl px-4 py-8">
-
 
         {/* === STICKY HEADER === */}
         <div className="sticky top-0 z-40 bg-gray-50 pb-4 border-b border-gray-50">
@@ -202,7 +186,6 @@ export default function Clients() {
               + New client
             </button>
           </div>
-
 
           {/* Filter Box */}
           <div className="mt-6 bg-white rounded-xl border p-4 shadow-sm">
@@ -290,13 +273,10 @@ export default function Clients() {
           </div>
         </div>
 
-
         {error && <p className="mt-4 text-red-600">{error}</p>}
-
 
         {/* ------------------ LIST SECTION ------------------ */}
         <div className="mt-2 relative z-0">
-
 
           {/* MOBILE CARD VIEW */}
           <div className="space-y-3 md:hidden">
@@ -310,13 +290,11 @@ export default function Clients() {
                   <p className="font-semibold">{c.name}</p>
                   <p className="text-sm text-gray-600 capitalize">{c.type}</p>
 
-
                   <div className="mt-2 text-sm">
                     <p><span className="font-medium">Email:</span> {c.email || "—"}</p>
                     <p><span className="font-medium">Phone:</span> {c.phone || "—"}</p>
                     <p><span className="font-medium">District:</span> {c.district || "—"}</p>
                   </div>
-
 
                   <div className="mt-4 flex gap-2">
                     <button
@@ -336,7 +314,6 @@ export default function Clients() {
               ))
             )}
           </div>
-
 
           {/* DESKTOP TABLE */}
           <div className="hidden md:block overflow-x-auto rounded-xl border bg-white shadow-sm">
@@ -377,10 +354,8 @@ export default function Clients() {
             </table>
           </div>
 
-
         </div>
       </div>
-
 
       {/* MODAL */}
       {open && (
@@ -438,6 +413,46 @@ export default function Clients() {
           </div>
         </div>
       )}
+
+      {/* Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        onClose={() => setConfirmDialog({ ...confirmDialog, isOpen: false })}
+        onConfirm={confirmDialog.onConfirm}
+        title={confirmDialog.title}
+        message={confirmDialog.message}
+      />
     </main>
+  );
+}
+
+/* ----------------------------- ConfirmDialog ----------------------------- */
+function ConfirmDialog({ isOpen, onClose, onConfirm, title, message }) {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-[1100] flex items-center justify-center bg-black/50 p-4">
+      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+        <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+        <p className="mt-2 text-sm text-gray-600">{message}</p>
+        <div className="mt-6 flex gap-3 justify-end">
+          <button
+            onClick={onClose}
+            className="rounded-lg border px-4 py-2 text-sm font-medium hover:bg-gray-50"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={() => {
+              onConfirm();
+              onClose();
+            }}
+            className="rounded-lg px-4 py-2 text-sm font-semibold text-white bg-red-600 hover:bg-red-700"
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }

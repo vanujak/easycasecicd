@@ -11,12 +11,19 @@ import casesRouter from "./routes/cases.routes.js";
 import hearingsRouter from "./routes/hearings.routes.js";
 
 const app = express();
-app.use(cors({ origin: ["http://localhost:5173","https://easy-case.vercel.app"], credentials: true, allowedHeaders: ["Content-Type", "Authorization"],
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]}));
+
+// FIXED: Added PATCH to allowed methods
+app.use(cors({ 
+  origin: ["http://localhost:5173", "https://easy-case.vercel.app"], 
+  credentials: true, 
+  allowedHeaders: ["Content-Type", "Authorization"],
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"] // Added PATCH here
+}));
+
 app.use(express.json());
 
 // connect to Atlas before serving requests
-await connectDB(process.env.MONGODB_URI);
+await connectDB(process.env.MONGODB_URI); // FIXED: Added .env back
 
 // basic health check
 app.get("/health", (_req, res) =>
@@ -29,7 +36,7 @@ app.use("/auth", authRoutes);
 // 👇 NEW: protected data routes (use requireAuth inside each router)
 app.use("/api/clients", clientsRouter);
 app.use("/api/cases", casesRouter);
-app.use("/api/hearings",authMiddleware,hearingsRouter);
+app.use("/api/hearings", authMiddleware, hearingsRouter);
 
 // 404 fallback
 app.use((req, res) => res.status(404).json({ error: "Not found" }));

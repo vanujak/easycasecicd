@@ -4,9 +4,7 @@ import { SRI_LANKA_DISTRICTS, SRI_LANKA_PROVINCES } from "../../constants/geo.js
 import { COURT_TYPES } from "../../constants/courts.js";
 import CaseDetailsOverlay from "../../components/CaseDetailsOverlay.jsx";
 
-
 const API = import.meta.env.VITE_API_URL;
-
 
 const CLIENT_TYPES = [
   "individual",
@@ -14,7 +12,6 @@ const CLIENT_TYPES = [
   "government",
   "organization",
 ];
-
 
 function normalizeSriLankaPhone(input = "") {
   const digits = input.replace(/[^\d]/g, "");
@@ -25,7 +22,6 @@ function normalizeSriLankaPhone(input = "") {
   return `+94${digits}`;
 }
 
-
 export default function Cases() {
   const token = localStorage.getItem("token");
   const [cases, setCases] = useState([]);
@@ -33,10 +29,18 @@ export default function Cases() {
   const [error, setError] = useState("");
   const [q, setQ] = useState("");
 
-
   const [openCaseModal, setOpenCaseModal] = useState(false);
-  const [openCaseId, setOpenCaseId] = useState(null); // selected case (details drawer)
+  const [openCaseId, setOpenCaseId] = useState(null);
 
+  // Confirmation dialog state
+  const [confirmDialog, setConfirmDialog] = useState({
+    isOpen: false,
+    title: "",
+    message: "",
+    onConfirm: () => {},
+    confirmText: "Confirm",
+    variant: "danger"
+  });
 
   // Prevent background scroll when overlay is open
   useEffect(() => {
@@ -50,38 +54,60 @@ export default function Cases() {
     };
   }, [openCaseId, openCaseModal]);
 
-
   const closeCase = async (id) => {
-    if (!confirm("Close this case? You won't be able to add new hearings.")) return;
-    try {
-      const res = await fetch(`${API}/api/cases/${id}/close`, {
-        method: "PATCH",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
-      if (!res.ok) return alert(data?.error || "Failed to close case");
-      fetchCases(q); // refresh list
-    } catch (e) {
-      alert(e.message);
-    }
+    setConfirmDialog({
+      isOpen: true,
+      title: "Close Case",
+      message: "Close this case? You won't be able to add new hearings.",
+      confirmText: "Close Case",
+      variant: "danger",
+      onConfirm: async () => {
+        try {
+          const res = await fetch(`${API}/api/cases/${id}/close`, {
+            method: "PATCH",
+            headers: { 
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}` 
+            },
+          });
+          const data = await res.json();
+          if (!res.ok) {
+            setError(data?.error || "Failed to close case");
+            return;
+          }
+          fetchCases(q); // refresh list
+        } catch (e) {
+          setError(e.message || "Failed to close case");
+        }
+      }
+    });
   };
-
 
   const deleteCase = async (id) => {
-    if (!confirm("Delete this case permanently? This cannot be undone.")) return;
-    try {
-      const res = await fetch(`${API}/api/cases/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
-      if (!res.ok) return alert(data?.error || "Failed to delete case");
-      fetchCases(q); // refresh list
-    } catch (e) {
-      alert(e.message);
-    }
+    setConfirmDialog({
+      isOpen: true,
+      title: "Delete Case",
+      message: "Delete this case permanently? This cannot be undone.",
+      confirmText: "Delete",
+      variant: "danger",
+      onConfirm: async () => {
+        try {
+          const res = await fetch(`${API}/api/cases/${id}`, {
+            method: "DELETE",
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          const data = await res.json();
+          if (!res.ok) {
+            setError(data?.error || "Failed to delete case");
+            return;
+          }
+          fetchCases(q); // refresh list
+        } catch (e) {
+          setError(e.message || "Failed to delete case");
+        }
+      }
+    });
   };
-
 
   const fetchCases = async (query = "") => {
     setLoading(true); setError("");
@@ -98,9 +124,7 @@ export default function Cases() {
     }
   };
 
-
   useEffect(() => { fetchCases(); }, []);
-
 
   // Reset filters function
   const resetFilters = () => {
@@ -108,15 +132,12 @@ export default function Cases() {
     fetchCases("");
   };
 
-
   // ---------- UI ----------
   return (
     <main className="min-h-screen bg-gray-50">
       <NavbarDashboard />
 
-
       <div className="mx-auto max-w-6xl px-4 py-8">
-
 
         {/* === STICKY HEADER SECTION === */}
         <div className="sticky top-0 z-40 bg-gray-50 pb-4 border-b border-gray-50">
@@ -131,7 +152,6 @@ export default function Cases() {
               + New case
             </button>
           </div>
-
 
           {/* 2. Search Bar with Reset Button */}
           <div className="mt-4 bg-white rounded-xl border p-4 shadow-sm">
@@ -162,13 +182,10 @@ export default function Cases() {
           </div>
         </div>
 
-
         {error && <p className="mt-4 text-red-600">{error}</p>}
-
 
         {/* ------------------ LIST SECTION ------------------ */}
         <div className="mt-4 relative z-0">
-
 
           {/* === MOBILE CARD VIEW (Visible only on small screens) === */}
           <div className="space-y-3 md:hidden">
@@ -197,13 +214,11 @@ export default function Cases() {
                     </span>
                   </div>
 
-
                   <div className="mt-3 text-sm text-gray-600 space-y-1">
                     <p><span className="font-medium text-gray-900">Client:</span> {c.clientName || "—"}</p>
                     <p><span className="font-medium text-gray-900">Court:</span> {c.courtType} {c.courtPlace ? `(${c.courtPlace})` : ""}</p>
                     <p><span className="font-medium text-gray-900">Date:</span> {c.createdAt ? new Date(c.createdAt).toLocaleDateString() : "—"}</p>
                   </div>
-
 
                   {/* Action Buttons */}
                   <div className="mt-4 flex gap-2 pt-3 border-t">
@@ -225,7 +240,6 @@ export default function Cases() {
               ))
             )}
           </div>
-
 
           {/* === DESKTOP TABLE VIEW (Hidden on mobile) === */}
           <div className="hidden md:block overflow-hidden rounded-xl border bg-white shadow-sm">
@@ -296,7 +310,6 @@ export default function Cases() {
         </div>
       </div>
 
-
       {/* Modals / Overlays */}
       {openCaseId && (
         <CaseDetailsOverlay
@@ -314,10 +327,20 @@ export default function Cases() {
           }}
         />
       )}
+
+      {/* Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        onClose={() => setConfirmDialog({ ...confirmDialog, isOpen: false })}
+        onConfirm={confirmDialog.onConfirm}
+        title={confirmDialog.title}
+        message={confirmDialog.message}
+        confirmText={confirmDialog.confirmText}
+        variant={confirmDialog.variant}
+      />
     </main>
   );
 }
-
 
 /* ----------------------------- CaseModal ----------------------------- */
 function CaseModal({ onClose, onSaved }) {
@@ -780,4 +803,37 @@ function CaseModal({ onClose, onSaved }) {
   );
 }
 
+/* ----------------------------- ConfirmDialog ----------------------------- */
+function ConfirmDialog({ isOpen, onClose, onConfirm, title, message, confirmText = "Confirm", cancelText = "Cancel", variant = "danger" }) {
+  if (!isOpen) return null;
 
+  return (
+    <div className="fixed inset-0 z-[1100] flex items-center justify-center bg-black/50 p-4">
+      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+        <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+        <p className="mt-2 text-sm text-gray-600">{message}</p>
+        <div className="mt-6 flex gap-3 justify-end">
+          <button
+            onClick={onClose}
+            className="rounded-lg border px-4 py-2 text-sm font-medium hover:bg-gray-50"
+          >
+            {cancelText}
+          </button>
+          <button
+            onClick={() => {
+              onConfirm();
+              onClose();
+            }}
+            className={`rounded-lg px-4 py-2 text-sm font-semibold text-white ${
+              variant === "danger"
+                ? "bg-red-600 hover:bg-red-700"
+                : "bg-blue-600 hover:bg-blue-700"
+            }`}
+          >
+            {confirmText}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
