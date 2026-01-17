@@ -31,3 +31,28 @@ jobs:
     - name: Run Tests
       # Vitest automatically detects CI=true and runs in single-pass mode
       run: npm test
+
+  backend-test:
+    name: Backend Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: backend/package-lock.json
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Run Tests
+      # This runs jest with cross-env and experimental-vm-modules
+      run: npm test
