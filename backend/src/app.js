@@ -10,7 +10,7 @@ import hearingsRouter from "./routes/hearings.routes.js";
 const app = express();
 
 app.use(cors({
-    origin: ["http://localhost:5173", "https://easy-case.vercel.app"],
+    origin: ["http://localhost:5173", "https://easy-case.vercel.app", "http://3.229.137.7"],
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization"],
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
