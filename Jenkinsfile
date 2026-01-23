@@ -47,7 +47,10 @@ pipeline {
             steps {
                 script {
                     docker.withRegistry('', 'docker-hub-credentials') {
-                        def app = docker.build("${FRONTEND_IMAGE}:${BUILD_NUMBER}", "./frontend")
+                        // FIX: Pass the build argument VITE_API_URL so the frontend knows where to send API requests
+                        def buildCommand = "--build-arg VITE_API_URL=http://3.229.137.7:4000 ./frontend"
+                        
+                        def app = docker.build("${FRONTEND_IMAGE}:${BUILD_NUMBER}", buildCommand)
                         app.push()
                         app.push("latest")
                     }
@@ -63,6 +66,8 @@ pipeline {
                     sh """
                         ssh -o StrictHostKeyChecking=no ubuntu@3.229.137.7 '
                             export APP_IMAGE=${BACKEND_IMAGE}:latest
+                            
+                            # Pull latest images
                             docker pull ${BACKEND_IMAGE}:latest
                             docker pull ${FRONTEND_IMAGE}:latest
                             
