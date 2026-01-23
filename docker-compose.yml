@@ -2,25 +2,41 @@ version: '3.8'
 
 services:
   backend:
-    build: ./backend
+    container_name: easycase-backend
+    image: vanujak/easycase-backend:latest
+    restart: always
     ports:
       - "4000:4000"
     environment:
       - PORT=4000
-      - MONGODB_URI=${MONGODB_URI}
-      - JWT_SECRET=${JWT_SECRET}
+      - MONGODB_URI=mongodb://mongo:27017/easycase
+      - JWT_SECRET=${JWT_SECRET:-defaultsecret}
     dns:
       - 8.8.8.8
       - 8.8.4.4
-    # For local WSL development, you might want volumes. For creating the artifact, this file just proves it works.
+    depends_on:
+      - mongo
 
   frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-      args:
-        - VITE_API_URL=http://localhost:4000
+    container_name: easycase-frontend
+    image: vanujak/easycase-frontend:latest
+    restart: always
     ports:
-      - "5173:80" # Map host 5173 (dev habit) to container 80 (nginx)
+      - "80:80" # Mapped to standard HTTP port 80 for production access
+    environment:
+      # This needs to be set at BUILD time for Vite, but passing it here helps if you have runtime injection
+      - VITE_API_URL=http://3.229.137.7:4000
     depends_on:
       - backend
+
+  mongo:
+    container_name: easycase-mongo
+    image: mongo:latest
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+volumes:
+  mongo-data:
