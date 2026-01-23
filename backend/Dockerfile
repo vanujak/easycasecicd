@@ -10,7 +10,7 @@ RUN npm ci --only=production
 COPY . .
 
 # Expose the API port
-EXPOSE 4000
+EXPOSE 8080
 
 # Start server
 CMD ["node", "src/server.js"]

@@ -48,7 +48,7 @@ pipeline {
                 script {
                     docker.withRegistry('', 'docker-hub-credentials') {
                         // FIX: Pass the build argument VITE_API_URL so the frontend knows where to send API requests
-                        def buildCommand = "--build-arg VITE_API_URL=http://easycase.site:4000 ./frontend"
+                        def buildCommand = "--build-arg VITE_API_URL=https://easycase.site:8080 ./frontend"
                         
                         def app = docker.build("${FRONTEND_IMAGE}:${BUILD_NUMBER}", buildCommand)
                         app.push()
