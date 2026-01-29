@@ -110,7 +110,7 @@ export default function Dashboard() {
           {greeting()}
           <br />
           <span className="text-gray-700">
-            Welcome back{userName ? `, ${userName}` : ""}!
+            Welcome man back{userName ? `, ${userName}` : ""}!
           </span>
         </h1>
         <p className="mt-1 text-gray-600">{new Date().toLocaleDateString()}</p>
