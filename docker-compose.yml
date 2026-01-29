@@ -6,9 +6,9 @@ services:
     image: vanujak/easycase-backend:latest
     restart: always
     ports:
-      - "8080:8080"
+      - "4000:4000"
     environment:
-      - PORT=8080
+      - PORT=4000
       - MONGODB_URI=mongodb://mongo:27017/easycase
       - JWT_SECRET=${JWT_SECRET:-defaultsecret}
     dns:
@@ -22,10 +22,9 @@ services:
     image: vanujak/easycase-frontend:latest
     restart: always
     ports:
-      - "8080:80" # Mapped to standard HTTP port 80 for production access
+      - "3000:80"  # Changed from 8080 to 3000 to avoid host conflicts
     environment:
-      # This needs to be set at BUILD time for Vite, but passing it here helps if you have runtime injection
-      - VITE_API_URL=https://easycase.site:8080
+      - VITE_API_URL=http://98.80.11.11:4000 # Points directly to backend port
     depends_on:
       - backend
 
