@@ -64,7 +64,7 @@ pipeline {
                     sh "scp -o StrictHostKeyChecking=no docker-compose.yml ubuntu@98.80.11.11:/home/ubuntu/docker-compose.yml"
                     
                     sh """
-                        ssh -o StrictHostKeyChecking=no ubuntu@3.229.137.7 '
+                        ssh -o StrictHostKeyChecking=no ubuntu@98.80.11.11 '
                             export APP_IMAGE=${BACKEND_IMAGE}:latest
                             
                             # Pull latest images
