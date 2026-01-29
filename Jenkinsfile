@@ -61,7 +61,7 @@ pipeline {
         stage('Deploy to Production') {
             steps {
                 sshagent(['prod-ssh-key']) {
-                    sh "scp -o StrictHostKeyChecking=no docker-compose.yml ubuntu@3.229.137.7:/home/ubuntu/docker-compose.yml"
+                    sh "scp -o StrictHostKeyChecking=no docker-compose.yml ubuntu@98.80.11.11:/home/ubuntu/docker-compose.yml"
                     
                     sh """
                         ssh -o StrictHostKeyChecking=no ubuntu@3.229.137.7 '
