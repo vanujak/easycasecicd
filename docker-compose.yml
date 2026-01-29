@@ -22,7 +22,7 @@ services:
     image: vanujak/easycase-frontend:latest
     restart: always
     ports:
-      - "80:80" # Mapped to standard HTTP port 80 for production access
+      - "8080:80" # Mapped to standard HTTP port 80 for production access
     environment:
       # This needs to be set at BUILD time for Vite, but passing it here helps if you have runtime injection
       - VITE_API_URL=https://easycase.site:8080
