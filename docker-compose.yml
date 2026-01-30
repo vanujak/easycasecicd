@@ -22,9 +22,9 @@ services:
     image: vanujak/easycase-frontend:latest
     restart: always
     ports:
-      - "3000:80"  # Changed from 8080 to 3000 to avoid host conflicts
+      - "3000:80"  
     environment:
-      - VITE_API_URL=http://98.80.11.11:4000 # Points directly to backend port
+      - VITE_API_URL=http://98.80.11.11:4000 
     depends_on:
       - backend
 

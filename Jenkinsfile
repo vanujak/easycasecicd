@@ -19,11 +19,8 @@ pipeline {
             steps {
                 script {
                     dir('backend') {
-                        // FIX: Run as root ('u root') inside container to avoid EACCES issues during installing packages
-                        // in a temporary pipeline container. 
                         docker.image('node:18').inside('-u root') {
                             sh 'npm install'
-                            // sh 'npm test' 
                             echo "Dependencies installed successfully."
                         }
                     }
@@ -47,7 +44,6 @@ pipeline {
             steps {
                 script {
                     docker.withRegistry('', 'docker-hub-credentials') {
-                        // FIX: Pass the build argument VITE_API_URL so the frontend knows where to send API requests
                         def buildCommand = "--build-arg VITE_API_URL=/api ./frontend"
                         
                         def app = docker.build("${FRONTEND_IMAGE}:${BUILD_NUMBER}", buildCommand)
