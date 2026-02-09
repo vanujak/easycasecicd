@@ -6,13 +6,18 @@ export default function Home() {
   const videoRef = useRef(null);
 
   useEffect(() => {
+    if (import.meta.env.MODE === "test") return;
+
     const video = videoRef.current;
     if (!video) return;
 
     // Improves autoplay reliability on mobile browsers.
-    const tryPlay = async () => {
+    const tryPlay = () => {
       try {
-        await video.play();
+        const playPromise = video.play();
+        if (playPromise && typeof playPromise.catch === "function") {
+          playPromise.catch(() => {});
+        }
       } catch {
         // Ignore autoplay rejections; browser/user settings may block it.
       }
