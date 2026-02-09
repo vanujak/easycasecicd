@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import NavbarDashboard from "../../components/NavbarDashboard.jsx";
 import { SRI_LANKA_DISTRICTS } from "../../constants/districts.js";
+import Footer from "../../components/Footer.jsx";
 
 const API = import.meta.env.VITE_API_URL;
 
@@ -168,10 +169,10 @@ export default function Clients() {
 
   // ---------- UI ----------
   return (
-    <main className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       <NavbarDashboard />
-
-      <div className="mx-auto max-w-6xl px-4 py-8">
+      <main className="flex-1">
+        <div className="mx-auto max-w-6xl px-4 py-8">
 
         {/* === STICKY HEADER === */}
         <div className="sticky top-0 z-40 bg-gray-50 pb-4 border-b border-gray-50">
@@ -355,7 +356,9 @@ export default function Clients() {
           </div>
 
         </div>
-      </div>
+        </div>
+      </main>
+      <Footer />
 
       {/* MODAL */}
       {open && (
@@ -422,7 +425,7 @@ export default function Clients() {
         title={confirmDialog.title}
         message={confirmDialog.message}
       />
-    </main>
+    </div>
   );
 }
 

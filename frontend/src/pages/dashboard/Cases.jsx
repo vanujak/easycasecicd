@@ -3,6 +3,7 @@ import NavbarDashboard from "../../components/NavbarDashboard.jsx";
 import { SRI_LANKA_DISTRICTS, SRI_LANKA_PROVINCES } from "../../constants/geo.js";
 import { COURT_TYPES } from "../../constants/courts.js";
 import CaseDetailsOverlay from "../../components/CaseDetailsOverlay.jsx";
+import Footer from "../../components/Footer.jsx";
 
 const API = import.meta.env.VITE_API_URL;
 
@@ -134,10 +135,10 @@ export default function Cases() {
 
   // ---------- UI ----------
   return (
-    <main className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       <NavbarDashboard />
-
-      <div className="mx-auto max-w-6xl px-4 py-8">
+      <main className="flex-1">
+        <div className="mx-auto max-w-6xl px-4 py-8">
 
         {/* === STICKY HEADER SECTION === */}
         <div className="sticky top-0 z-40 bg-gray-50 pb-4 border-b border-gray-50">
@@ -308,7 +309,9 @@ export default function Cases() {
             </table>
           </div>
         </div>
-      </div>
+        </div>
+      </main>
+      <Footer />
 
       {/* Modals / Overlays */}
       {openCaseId && (
@@ -338,7 +341,7 @@ export default function Cases() {
         confirmText={confirmDialog.confirmText}
         variant={confirmDialog.variant}
       />
-    </main>
+    </div>
   );
 }
 
