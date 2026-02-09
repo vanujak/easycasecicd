@@ -7,10 +7,6 @@ vi.mock('../components/NavbarHome.jsx', () => ({
     default: () => <div data-testid="navbar-home">NavbarHome</div>,
 }));
 
-vi.mock('../components/BackgroundSlideshow.jsx', () => ({
-    default: () => <div data-testid="background-slideshow">BackgroundSlideshow</div>,
-}));
-
 describe('Home Page', () => {
     it('renders the welcome message', () => {
         render(<Home />);
@@ -25,8 +21,8 @@ describe('Home Page', () => {
     it('renders structural components', () => {
         render(<Home />);
 
-        // Verify mocked components are present
+        // Verify navbar and background video are present
         expect(screen.getByTestId('navbar-home')).toBeInTheDocument();
-        expect(screen.getByTestId('background-slideshow')).toBeInTheDocument();
+        expect(screen.getByTestId('home-background-video')).toBeInTheDocument();
     });
 });

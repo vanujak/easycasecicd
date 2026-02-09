@@ -1,5 +1,6 @@
 import { useState } from "react";
 import NavbarHome from "../components/NavbarHome.jsx";
+import Footer from "../components/Footer.jsx";
 
 
 export default function Contact() {
@@ -26,9 +27,10 @@ export default function Contact() {
 
 
   return (
-    <main className="flex-1">
-        <NavbarHome/>
-      <div className="mx-auto max-w-3xl px-6 py-16">
+    <div className="min-h-screen flex flex-col">
+      <NavbarHome />
+      <main className="flex-1">
+        <div className="mx-auto max-w-3xl px-6 py-16">
         <div className="rounded-2xl border bg-white/90 backdrop-blur p-8 shadow">
           <h1 className="text-3xl font-bold text-center">Contact Us</h1>
           <p className="mt-2 text-center text-gray-600">
@@ -112,7 +114,9 @@ export default function Contact() {
             </button>
           </form>
         </div>
-      </div>
-    </main>
+        </div>
+      </main>
+      <Footer />
+    </div>
   );
 }

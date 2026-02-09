@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import NavbarHome from "../../components/NavbarHome.jsx";
+import Footer from "../../components/Footer.jsx";
 const API = import.meta.env.VITE_API_URL;
 
 export default function Signup() {
@@ -57,16 +58,17 @@ export default function Signup() {
 };
 
   return (
-    <main className="flex-1">
-    <NavbarHome/>
-      <div className="mx-auto max-w-xl px-6 py-16">
-        <div className="rounded-2xl border bg-white/90 backdrop-blur p-8 shadow">
-          <h1 className="text-3xl font-bold text-center">Create account</h1>
-          <p className="mt-2 text-center text-gray-600">
-            Join EasyCase (Lawyer)
-          </p>
+    <div className="min-h-screen flex flex-col">
+      <NavbarHome />
+      <main className="flex-1">
+        <div className="mx-auto max-w-xl px-6 py-16">
+          <div className="rounded-2xl border bg-white/90 backdrop-blur p-8 shadow">
+            <h1 className="text-3xl font-bold text-center">Create account</h1>
+            <p className="mt-2 text-center text-gray-600">
+              Join EasyCase (Lawyer)
+            </p>
 
-          <form className="mt-8 space-y-5" onSubmit={onSubmit}>
+            <form className="mt-8 space-y-5" onSubmit={onSubmit}>
             {/* Name */}
             <div>
               <label className="block text-sm mb-1">Full Name</label>
@@ -194,15 +196,17 @@ export default function Signup() {
               Sign up
             </button>
 
-            <p className="text-center text-sm text-gray-600">
-              Already have an account?{" "}
-              <Link to="/login" className="font-semibold underline">
-                Log in
-              </Link>
-            </p>
-          </form>
+              <p className="text-center text-sm text-gray-600">
+                Already have an account?{" "}
+                <Link to="/login" className="font-semibold underline">
+                  Log in
+                </Link>
+              </p>
+            </form>
+          </div>
         </div>
-      </div>
-    </main>
+      </main>
+      <Footer />
+    </div>
   );
 }
