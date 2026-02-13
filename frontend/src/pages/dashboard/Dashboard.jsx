@@ -25,11 +25,17 @@ export default function Dashboard() {
   const [success, setSuccess] = useState(
     location.state?.loginSuccess ? "Login successful!" : ""
   );
+  const [showSuccess, setShowSuccess] = useState(Boolean(location.state?.loginSuccess));
 
   useEffect(() => {
     if (!success) return;
-    const timer = setTimeout(() => setSuccess(""), 3000);
-    return () => clearTimeout(timer);
+    setShowSuccess(true);
+    const hideTimer = setTimeout(() => setShowSuccess(false), 2500);
+    const clearTimer = setTimeout(() => setSuccess(""), 3200);
+    return () => {
+      clearTimeout(hideTimer);
+      clearTimeout(clearTimer);
+    };
   }, [success]);
 
   // lock scroll when drawer is open (same pattern as Cases page)
@@ -117,7 +123,9 @@ export default function Dashboard() {
       {success && (
         <div
           role="status"
-          className="fixed top-4 right-4 z-50 rounded-lg bg-emerald-600 text-white px-4 py-2 shadow-lg"
+          className={`fixed top-4 right-4 z-50 rounded-lg bg-emerald-600 text-white px-4 py-2 shadow-lg pointer-events-none transition-all duration-500 ease-out ${
+            showSuccess ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2"
+          }`}
         >
           {success}
         </div>
