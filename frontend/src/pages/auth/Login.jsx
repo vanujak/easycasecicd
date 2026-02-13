@@ -10,6 +10,7 @@ export default function Login() {
   const navigate = useNavigate();  
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
 
   const onChange = (e) =>
@@ -18,6 +19,7 @@ export default function Login() {
   const onSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setSuccess("");
     setLoading(true);
     try {
       const res = await fetch(`${API}/auth/login`, {
@@ -28,8 +30,8 @@ export default function Login() {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data?.error || `Login failed (${res.status})`);
       localStorage.setItem("token", data.token);
-      window.alert("Login successful!");
-      navigate("/dashboard");     
+      setSuccess("Login successful!");
+      setTimeout(() => navigate("/dashboard"), 1200);
     } catch (err) {
       setError(err.message || "Network error");
     } finally {
@@ -41,6 +43,14 @@ export default function Login() {
     <div className="min-h-screen flex flex-col">
       <NavbarHome />
       <main className="flex-1">
+        {success && (
+          <div
+            role="status"
+            className="fixed top-4 right-4 z-50 rounded-lg bg-emerald-600 text-white px-4 py-2 shadow-lg"
+          >
+            {success}
+          </div>
+        )}
         <div className="mx-auto max-w-md px-6 py-16">
           <div className="rounded-2xl border bg-white/90 backdrop-blur p-8 shadow">
             <h1 className="text-3xl font-bold text-center">Log in</h1>
