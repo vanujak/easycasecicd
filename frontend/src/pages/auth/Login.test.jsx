@@ -25,6 +25,8 @@ describe('Login Page', () => {
         vi.resetAllMocks();
         // Mock global fetch
         global.fetch = vi.fn();
+        // Mock success popup
+        global.alert = vi.fn();
         // Mock localStorage
         Storage.prototype.setItem = vi.fn();
     });
@@ -86,6 +88,7 @@ describe('Login Page', () => {
             );
 
             expect(localStorage.setItem).toHaveBeenCalledWith('token', 'fake-jwt-token');
+            expect(global.alert).toHaveBeenCalledWith('Login successful!');
             expect(navigateMock).toHaveBeenCalledWith('/dashboard');
         });
     });
@@ -113,6 +116,7 @@ describe('Login Page', () => {
         await waitFor(() => {
             expect(screen.getByText(/Invalid credentials/i)).toBeInTheDocument();
             expect(localStorage.setItem).not.toHaveBeenCalled();
+            expect(global.alert).not.toHaveBeenCalled();
             expect(navigateMock).not.toHaveBeenCalled();
         });
     });

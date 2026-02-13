@@ -28,6 +28,7 @@ export default function Login() {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data?.error || `Login failed (${res.status})`);
       localStorage.setItem("token", data.token);
+      window.alert("Login successful!");
       navigate("/dashboard");     
     } catch (err) {
       setError(err.message || "Network error");
