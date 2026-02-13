@@ -1,6 +1,6 @@
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { BrowserRouter } from 'react-router-dom';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import Dashboard from './Dashboard';
 
 // Mock components
@@ -51,6 +51,16 @@ describe('Dashboard Page', () => {
         }
     };
 
+    const renderDashboard = (state = undefined) => {
+        render(
+            <MemoryRouter initialEntries={[{ pathname: '/dashboard', state }]}>
+                <Routes>
+                    <Route path="/dashboard" element={<Dashboard />} />
+                </Routes>
+            </MemoryRouter>
+        );
+    };
+
     it('renders dashboard with loading state initially', async () => {
         // We mock a pending promise to keep it loading? No, just render and check immediately.
         // But fetch mocks are resolved immediately.
@@ -58,7 +68,7 @@ describe('Dashboard Page', () => {
         // However, we can check it eventually DISAPPEARS.
 
         mockDashboardData();
-        render(<BrowserRouter><Dashboard /></BrowserRouter>);
+        renderDashboard();
 
         // It might be too fast to see loading, but we can verify final state
         await waitFor(() => {
@@ -69,7 +79,7 @@ describe('Dashboard Page', () => {
 
     it('displays user name and greeting', async () => {
         mockDashboardData();
-        render(<BrowserRouter><Dashboard /></BrowserRouter>);
+        renderDashboard();
 
         await waitFor(() => {
             // Check for ANY of the greetings
@@ -86,7 +96,7 @@ describe('Dashboard Page', () => {
         ];
         mockDashboardData(cases);
 
-        render(<BrowserRouter><Dashboard /></BrowserRouter>);
+        renderDashboard();
 
         await waitFor(() => {
             // There are 2 open cases
@@ -104,7 +114,7 @@ describe('Dashboard Page', () => {
 
         mockDashboardData(cases, hearings);
 
-        render(<BrowserRouter><Dashboard /></BrowserRouter>);
+        renderDashboard();
 
         await waitFor(() => {
             expect(screen.getByText(/Case A/i)).toBeInTheDocument();
@@ -121,7 +131,7 @@ describe('Dashboard Page', () => {
 
         mockDashboardData(cases, hearings);
 
-        render(<BrowserRouter><Dashboard /></BrowserRouter>);
+        renderDashboard();
 
         // Wait for hearing to appear
         await waitFor(() => {
@@ -133,5 +143,12 @@ describe('Dashboard Page', () => {
 
         expect(screen.getByTestId('case-overlay')).toBeInTheDocument();
         expect(screen.getByText(/Case Details: 1/i)).toBeInTheDocument();
+    });
+
+    it('shows login success popup when navigated with loginSuccess state', async () => {
+        mockDashboardData();
+        renderDashboard({ loginSuccess: true });
+
+        expect(screen.getByRole('status')).toHaveTextContent(/Login successful!/i);
     });
 });

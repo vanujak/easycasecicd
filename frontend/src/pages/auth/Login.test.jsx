@@ -31,7 +31,6 @@ describe('Login Page', () => {
 
     afterEach(() => {
         vi.clearAllMocks();
-        vi.useRealTimers();
     });
 
     const renderLogin = () => {
@@ -53,8 +52,6 @@ describe('Login Page', () => {
     });
 
     it('handles successful login flow', async () => {
-        vi.useFakeTimers();
-
         // Mock legitimate API response
         global.fetch.mockResolvedValueOnce({
             ok: true,
@@ -89,11 +86,10 @@ describe('Login Page', () => {
             );
 
             expect(localStorage.setItem).toHaveBeenCalledWith('token', 'fake-jwt-token');
-            expect(screen.getByText(/Login successful!/i)).toBeInTheDocument();
+            expect(navigateMock).toHaveBeenCalledWith('/dashboard', {
+                state: { loginSuccess: true },
+            });
         });
-
-        vi.advanceTimersByTime(1200);
-        expect(navigateMock).toHaveBeenCalledWith('/dashboard');
     });
 
     it('displays error message on login failure', async () => {
@@ -119,7 +115,6 @@ describe('Login Page', () => {
         await waitFor(() => {
             expect(screen.getByText(/Invalid credentials/i)).toBeInTheDocument();
             expect(localStorage.setItem).not.toHaveBeenCalled();
-            expect(screen.queryByText(/Login successful!/i)).not.toBeInTheDocument();
             expect(navigateMock).not.toHaveBeenCalled();
         });
     });

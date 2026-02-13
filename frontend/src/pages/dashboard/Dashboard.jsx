@@ -1,5 +1,6 @@
 // src/pages/Dashboard.jsx
 import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import NavbarDashboard from "../../components/NavbarDashboard.jsx";
 import CaseDetailsOverlay from "../../components/CaseDetailsOverlay.jsx";
 import Footer from "../../components/Footer.jsx";
@@ -7,6 +8,7 @@ import Footer from "../../components/Footer.jsx";
 const API = import.meta.env.VITE_API_URL;
 
 export default function Dashboard() {
+  const location = useLocation();
   const token = localStorage.getItem("token");
 
   // header
@@ -20,6 +22,15 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
   const [openCaseId, setOpenCaseId] = useState(null);
+  const [success, setSuccess] = useState(
+    location.state?.loginSuccess ? "Login successful!" : ""
+  );
+
+  useEffect(() => {
+    if (!success) return;
+    const timer = setTimeout(() => setSuccess(""), 3000);
+    return () => clearTimeout(timer);
+  }, [success]);
 
   // lock scroll when drawer is open (same pattern as Cases page)
   useEffect(() => {
@@ -103,6 +114,14 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
+      {success && (
+        <div
+          role="status"
+          className="fixed top-4 right-4 z-50 rounded-lg bg-emerald-600 text-white px-4 py-2 shadow-lg"
+        >
+          {success}
+        </div>
+      )}
       <NavbarDashboard />
       <main className="flex-1">
         <div className="mx-auto max-w-6xl px-4 py-8">
