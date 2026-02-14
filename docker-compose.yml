@@ -22,7 +22,7 @@ services:
     image: vanujak/easycase-frontend:latest
     restart: always
     ports:
-      - "80:3000"  
+      - "3000:3000"  
     environment:
       - VITE_API_URL=http://98.80.11.11:4000 
     depends_on:
