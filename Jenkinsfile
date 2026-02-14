@@ -15,7 +15,7 @@ pipeline {
             }
         }
 
-        stage('Test Backend') {
+        stage('Unit tesing') {
             steps {
                 script {
                     dir('backend') {
