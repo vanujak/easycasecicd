@@ -69,7 +69,6 @@ export default function NavbarHome() {
           <NavLink to="/login" className={cls}>Log in</NavLink>
           <NavLink to="/signup" className={cls}>Sign up</NavLink>
           <NavLink to="/contact" className={cls}>Contact Us</NavLink>
-          <NavLink to="/contact" className={cls}>5131-Vanuja</NavLink>
         </div>
       </div>
 
